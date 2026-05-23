@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!--
+    wediditforyou — primary mark, with subtle inner highlight.
+    The radial gradient gives the dot a paper-and-ink quality so it
+    doesn't read as a generic SaaS-style flat circle at larger sizes.
+    For tiny use (favicon, small badges) prefer mark-flat.svg.
+  -->
+  <defs>
+    <radialGradient id="mark-grad" cx="38%" cy="33%" r="75%">
+      <stop offset="0%" stop-color="#E66B2C"/>
+      <stop offset="55%" stop-color="#C2410C"/>
+      <stop offset="100%" stop-color="#9A3412"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="84" fill="url(#mark-grad)"/>
+</svg>

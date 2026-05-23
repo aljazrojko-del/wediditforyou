@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!--
+    wediditforyou — for use on the warm-dark brand background (#1F1814).
+    The dot gets a slightly lighter terracotta + a thin cream halo so it
+    holds its shape and doesn't disappear into a dark surface.
+  -->
+  <defs>
+    <radialGradient id="dark-grad" cx="38%" cy="33%" r="75%">
+      <stop offset="0%" stop-color="#F08247"/>
+      <stop offset="55%" stop-color="#D85518"/>
+      <stop offset="100%" stop-color="#A33A0E"/>
+    </radialGradient>
+  </defs>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#FAF6F0" stroke-opacity="0.08" stroke-width="2"/>
+  <circle cx="100" cy="100" r="84" fill="url(#dark-grad)"/>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!--
+    wediditforyou — square avatar.
+    Cream background + terracotta dot. Built for Instagram, X,
+    LinkedIn, GMB profile photos. Padding tuned to look right inside
+    Instagram's circular crop.
+  -->
+  <rect width="1024" height="1024" rx="180" fill="#FAF6F0"/>
+  <defs>
+    <radialGradient id="avatar-grad" cx="38%" cy="33%" r="75%">
+      <stop offset="0%" stop-color="#E66B2C"/>
+      <stop offset="55%" stop-color="#C2410C"/>
+      <stop offset="100%" stop-color="#9A3412"/>
+    </radialGradient>
+  </defs>
+  <circle cx="512" cy="512" r="320" fill="url(#avatar-grad)"/>
+</svg>

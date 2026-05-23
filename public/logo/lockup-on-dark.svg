@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 96" width="720" height="96">
+  <!--
+    wediditforyou — lockup for use on warm-dark backgrounds (#1F1814).
+  -->
+  <text
+    x="0"
+    y="66"
+    font-family="ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace"
+    font-size="56"
+    font-weight="500"
+    letter-spacing="-1.5"
+    fill="#FAF6F0"
+  ><tspan>wediditforyou</tspan><tspan fill="#E89A6B">.</tspan></text>
+</svg>

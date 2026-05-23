@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 96" width="720" height="96">
+  <!--
+    wediditforyou — full lockup (wordmark + dot).
+    Uses a system mono stack so it falls back gracefully wherever
+    you drop it. The terracotta period is rendered as part of the
+    text run so it aligns on the baseline regardless of font.
+  -->
+  <text
+    x="0"
+    y="66"
+    font-family="ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace"
+    font-size="56"
+    font-weight="500"
+    letter-spacing="-1.5"
+    fill="#1F1814"
+  ><tspan>wediditforyou</tspan><tspan fill="#C2410C">.</tspan></text>
+</svg>
