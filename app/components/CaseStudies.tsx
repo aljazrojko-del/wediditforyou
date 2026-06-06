@@ -45,9 +45,9 @@ export default function CaseStudies() {
             Live builds. Real businesses. Owners haven&apos;t seen them yet.
           </h2>
           <p className="mt-6 text-lg text-[#1F1814]/65">
-            We&apos;re locking in 10 founding clients at $297. The first two
+            We&apos;re locking in 10 founding clients at $450. The first two
             sites are below — owners get a call this week. After that, the
-            price moves to $497 permanently.
+            price moves to $700 permanently.
           </p>
         </ScrollReveal>
 

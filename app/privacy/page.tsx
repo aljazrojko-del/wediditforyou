@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         Privacy Policy
       </h1>
       <p className="mt-3 text-sm text-stone-500 dark:text-stone-400">
-        Last updated: May 21, 2026
+        Last updated: June 5, 2026
       </p>
 
       <div className="prose prose-stone dark:prose-invert max-w-none mt-10 space-y-8">
@@ -33,10 +33,10 @@ export default function PrivacyPage() {
             dog groomers, tutors, and similar appointment-based operators.
             For questions about this policy contact{" "}
             <a
-              href="mailto:aljaz.rojko@gmail.com"
+              href="mailto:info@wedidit4you.com"
               className="underline"
             >
-              aljaz.rojko@gmail.com
+              info@wedidit4you.com
             </a>
             .
           </p>
@@ -112,9 +112,10 @@ export default function PrivacyPage() {
           <p className="mt-4 rounded-md border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm">
             <strong>SMS-specific carve-out (T-Mobile / AT&amp;T / Verizon required wording):</strong>
             <br />
-            All the above categories exclude text messaging originator opt-in
-            data and consent; this information will not be shared with any
-            third parties.
+            No mobile information will be shared with third parties or
+            affiliates for marketing or promotional purposes. All the above
+            categories exclude text messaging originator opt-in data and
+            consent; this information will not be shared with any third parties.
           </p>
         </section>
 
@@ -145,10 +146,10 @@ export default function PrivacyPage() {
               message. We will stop messaging you within minutes and
               permanently. Reply <strong>HELP</strong> for help or email{" "}
               <a
-                href="mailto:aljaz.rojko@gmail.com"
+                href="mailto:info@wedidit4you.com"
                 className="underline"
               >
-                aljaz.rojko@gmail.com
+                info@wedidit4you.com
               </a>
               .
             </li>
@@ -173,8 +174,8 @@ export default function PrivacyPage() {
             <li>
               Request a copy of the data we hold about you, or its deletion,
               by emailing{" "}
-              <a href="mailto:aljaz.rojko@gmail.com" className="underline">
-                aljaz.rojko@gmail.com
+              <a href="mailto:info@wedidit4you.com" className="underline">
+                info@wedidit4you.com
               </a>
               . We respond within 30 days.
             </li>
@@ -215,8 +216,8 @@ export default function PrivacyPage() {
             wediditforyou
             <br />
             Email:{" "}
-            <a href="mailto:aljaz.rojko@gmail.com" className="underline">
-              aljaz.rojko@gmail.com
+            <a href="mailto:info@wedidit4you.com" className="underline">
+              info@wedidit4you.com
             </a>
             <br />
             SMS opt-out: reply STOP to any of our messages.

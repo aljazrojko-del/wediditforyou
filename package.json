@@ -15,7 +15,10 @@
     "text-lead": "tsx scripts/text-lead.ts",
     "send-sms": "tsx scripts/send-sms.ts",
     "bridge-to-dashboard": "tsx scripts/bridge-to-dashboard.ts",
-    "send-review-request": "tsx scripts/send-review-request.ts"
+    "send-review-request": "tsx scripts/send-review-request.ts",
+    "call": "tsx scripts/call-from-supabase.ts",
+    "configure-signalwire-numbers": "tsx scripts/configure-signalwire-numbers.ts",
+    "text-lead-sw": "tsx scripts/text-lead-signalwire.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -26,6 +29,7 @@
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "stripe": "^22.2.0",
     "tsx": "^4.21.0"
   },
   "devDependencies": {

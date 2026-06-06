@@ -35,8 +35,8 @@ export default function Founder() {
               actually want the result.
             </p>
             <p>
-              $297 is pre-revenue pricing — we&apos;re building our portfolio.
-              After the first ten paying clients, the price moves to $497.
+              $450 is launch pricing — we&apos;re building our portfolio.
+              After the first ten paying clients, the price moves to $700.
               Until then, you get the same site for less than what most
               charge for a logo.
             </p>

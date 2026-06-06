@@ -130,7 +130,7 @@ export default function ContactForm() {
     const requiredByStep: Record<number, string[]> = {
       0: ["businessName", "niche", "location"],
       1: [],
-      2: ["name", "email", "phone"],
+      2: ["name", "email", "phone", "smsConsent"],
     };
     const required = requiredByStep[currentStep] || [];
 
@@ -247,6 +247,11 @@ export default function ContactForm() {
       uploadFailures += results.filter((u) => u === null).length;
     }
 
+    const smsConsentEl = form.elements.namedItem("smsConsent") as
+      | HTMLInputElement
+      | null;
+    const smsConsent = Boolean(smsConsentEl?.checked);
+
     const data = {
       name: readField(form, "name"),
       email: readField(form, "email"),
@@ -259,6 +264,8 @@ export default function ContactForm() {
       notes: readField(form, "notes"),
       logoUrl,
       photoUrls,
+      smsConsent,
+      smsConsentAt: smsConsent ? new Date().toISOString() : null,
     };
 
     try {
@@ -350,7 +357,6 @@ export default function ContactForm() {
                 type="text"
                 required
                 autoComplete="organization"
-                autoFocus
                 className={inputCls}
                 placeholder="Reyes Mobile Mechanic"
               />
@@ -619,6 +625,38 @@ export default function ContactForm() {
                 />
               </div>
             </div>
+
+            {/* SMS consent — required by carrier (TCPA / A2P 10DLC). Must be
+                explicit + unchecked by default. Submit handler blocks if not
+                ticked. Phrased plain-English; the legal disclosure stays
+                visible above the submit button. */}
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#1F1814]/15 bg-[#FAF6F0] px-4 py-3 has-[:checked]:border-[#C2410C] has-[:checked]:bg-[#C2410C]/5">
+              <input
+                id="smsConsent"
+                name="smsConsent"
+                type="checkbox"
+                required
+                className="mt-0.5 h-4 w-4 accent-[#C2410C]"
+              />
+              <span className="text-sm text-[#1F1814]/80">
+                <strong className="font-semibold text-[#1F1814]">
+                  Yes, text me my preview.
+                </strong>{" "}
+                I agree to receive SMS from We Did It For You at the number above
+                about my free website preview and order updates. Message frequency
+                varies. Msg &amp; data rates may apply. Reply STOP to opt out,
+                HELP for help. See our{" "}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener"
+                  className="font-medium underline"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </span>
+            </label>
           </fieldset>
         )}
       </div>

@@ -299,28 +299,35 @@ export default function Home() {
             variant="stagger"
             staggerSelector=".tier-card"
           >
-            {/* STARTER */}
-            <div className="tier-card flex flex-col overflow-hidden rounded-3xl border border-[#FAF6F0]/10 bg-[#FAF6F0] text-[#1F1814] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.5)]">
+            {/* STARTER — positioned as "the basics", smaller emphasis */}
+            <div className="tier-card flex flex-col overflow-hidden rounded-3xl border border-[#FAF6F0]/10 bg-[#FAF6F0]/95 text-[#1F1814] opacity-95 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.4)]">
               <div className="px-7 pt-9 pb-6 sm:px-9">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="inline-block rounded-full border border-[#1F1814]/15 bg-[#1F1814]/5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#1F1814]/70">
                     Starter
                   </span>
+                  <span className="inline-block rounded-full bg-[#1F1814] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FAF6F0]">
+                    First 10 only
+                  </span>
                 </div>
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-xl font-semibold text-[#1F1814]/55">
-                    $
+                <div className="mt-5 flex items-baseline gap-3">
+                  <span className="font-mono text-2xl text-[#1F1814]/40 line-through">
+                    $700
                   </span>
-                  <span className="text-6xl font-semibold leading-none tracking-tight text-[#1F1814]">
-                    297
-                  </span>
-                  <span className="ml-1 text-sm text-[#1F1814]/55">
-                    one-time
-                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-semibold text-[#1F1814]/55">
+                      $
+                    </span>
+                    <span className="text-6xl font-semibold leading-none tracking-tight text-[#1F1814]">
+                      450
+                    </span>
+                    <span className="ml-1 text-sm text-[#1F1814]/55">
+                      one-time
+                    </span>
+                  </div>
                 </div>
                 <p className="mt-3 text-sm text-[#1F1814]/65">
-                  The fundamentals to be findable on Google. Pay $0 until you
-                  approve.
+                  The basics. To get more than findable, see Premium →
                 </p>
               </div>
 
@@ -330,59 +337,109 @@ export default function Home() {
                 </div>
                 <ul className="grid gap-3">
                   {[
-                    "Full custom website, built around your business",
-                    "Custom domain — registered, DNS pointed, live",
-                    "Hosting + SSL — zero config on your end",
-                    "Booking calendar wired to your phone & email",
-                    "One review call to polish before going live",
+                    { label: "Full custom website, built around your business", value: 1200 },
+                    { label: "Custom domain — registered, DNS pointed, live", value: 50 },
+                    { label: "Hosting + SSL for 1 year — zero config on your end", value: 250 },
+                    { label: "Booking calendar wired to your phone & email", value: 150 },
+                    { label: "One review call to polish before going live", value: 100 },
                   ].map((item) => (
                     <li
-                      key={item}
+                      key={item.label}
                       className="flex items-start gap-3 text-[14px] leading-relaxed text-[#1F1814]/85"
                     >
                       <span className="mt-1 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-[#1F1814]/10 text-[10px] font-bold text-[#1F1814]/70">
                         ✓
                       </span>
-                      <span>{item}</span>
+                      <span className="flex-1">{item.label}</span>
+                      <span className="font-mono text-xs tabular-nums text-[#1F1814]/40">
+                        ${item.value}
+                      </span>
                     </li>
                   ))}
                 </ul>
 
+                {/* Value stack callout for Starter */}
+                <div className="mt-6 rounded-2xl bg-[#1F1814]/95 p-5 text-[#FAF6F0]">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-mono uppercase tracking-[0.2em] text-[#FAF6F0]/55">
+                      Stack value
+                    </span>
+                    <span className="font-mono text-sm text-[#FAF6F0]/55 line-through">
+                      $1,750
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-[#FAF6F0]">
+                      Launch price (first 10)
+                    </span>
+                    <span className="font-mono text-2xl font-bold text-[#FAF6F0]">
+                      $450
+                    </span>
+                  </div>
+                  <div className="mt-2 border-t border-[#FAF6F0]/15 pt-2">
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#FAF6F0]/70">
+                        You save
+                      </span>
+                      <span className="font-mono text-xl font-bold text-[#FAF6F0]">
+                        $1,300
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-5 text-xs italic text-[#1F1814]/55">
+                  For owners who want to test the waters before committing —
+                  same site quality, just without the marketing extras.
+                </p>
+
                 <a
                   href="#contact"
-                  className="mt-auto pt-7 text-[15px] font-semibold text-[#1F1814] hover:underline"
+                  className="mt-5 inline-flex items-center justify-center rounded-xl border border-[#1F1814]/15 bg-[#FAF6F0] px-6 py-3 text-sm font-medium text-[#1F1814]/80 transition hover:bg-[#F0E9DC]"
                 >
-                  Build my starter site →
+                  Just the basics — $450
                 </a>
               </div>
             </div>
 
-            {/* PREMIUM — highlighted */}
-            <div className="tier-card relative flex flex-col overflow-hidden rounded-3xl border-2 border-[#C2410C] bg-[#FAF6F0] text-[#1F1814] shadow-[0_40px_100px_-20px_rgba(194,65,12,0.45)]">
+            {/* PREMIUM — visually dominant, default choice */}
+            <div className="tier-card premium-glow relative flex flex-col overflow-hidden rounded-3xl border-2 border-[#C2410C] bg-[#FAF6F0] text-[#1F1814] shadow-[0_50px_120px_-20px_rgba(194,65,12,0.6)] lg:scale-[1.04] lg:z-10">
               <div className="absolute right-0 top-0 rounded-bl-2xl bg-[#C2410C] px-4 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-white">
-                Most popular
+                Most pick this
               </div>
 
               <div className="px-7 pt-9 pb-6 sm:px-9">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="inline-block rounded-full bg-[#C2410C] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-white">
                     Premium
                   </span>
+                  <span className="inline-block rounded-full bg-[#1F1814] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[#FAF6F0]">
+                    First 10 only
+                  </span>
                 </div>
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-xl font-semibold text-[#1F1814]/55">
-                    $
+                <div className="mt-5 flex items-baseline gap-3">
+                  <span className="font-mono text-2xl text-[#1F1814]/40 line-through">
+                    $1,200
                   </span>
-                  <span className="text-6xl font-semibold leading-none tracking-tight text-[#1F1814]">
-                    797
-                  </span>
-                  <span className="ml-1 text-sm text-[#1F1814]/55">
-                    one-time
-                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-semibold text-[#1F1814]/55">
+                      $
+                    </span>
+                    <span className="text-6xl font-semibold leading-none tracking-tight text-[#1F1814]">
+                      700
+                    </span>
+                    <span className="ml-1 text-sm text-[#1F1814]/55">
+                      one-time
+                    </span>
+                  </div>
                 </div>
                 <p className="mt-3 text-sm text-[#1F1814]/70">
-                  Everything in Starter, plus the SEO + automation that turns
-                  the site into a lead machine.
+                  Launch price for our first 10 customers. Everything in Starter,
+                  plus the SEO + automation that turns the site into a lead
+                  machine.
+                </p>
+                <p className="mt-3 rounded-lg bg-[#C2410C]/10 px-3 py-2 text-xs font-semibold text-[#C2410C]">
+                  Only $250 more than Starter — unlocks $2,600 in extras
                 </p>
               </div>
 
@@ -428,10 +485,10 @@ export default function Home() {
                   </div>
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-sm font-semibold text-[#FAF6F0]">
-                      Founding price
+                      Launch price (first 10)
                     </span>
                     <span className="font-mono text-2xl font-bold text-[#E89A6B]">
-                      $797
+                      $700
                     </span>
                   </div>
                   <div className="mt-2 border-t border-[#FAF6F0]/15 pt-2">
@@ -440,17 +497,22 @@ export default function Home() {
                         You save
                       </span>
                       <span className="font-mono text-xl font-bold text-[#E89A6B]">
-                        $1,803
+                        $1,900
                       </span>
                     </div>
                   </div>
                 </div>
 
+                <p className="mt-5 text-xs italic text-[#1F1814]/65">
+                  For the price of one extra service call from your new site,
+                  you get all 8 Premium components for life.
+                </p>
+
                 <a
                   href="#contact"
-                  className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#C2410C] px-6 py-4 text-base font-semibold text-white transition hover:bg-[#9A3412]"
+                  className="mt-5 inline-flex items-center justify-center rounded-xl bg-[#C2410C] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[#C2410C]/30 transition hover:bg-[#9A3412] hover:shadow-[#C2410C]/50"
                 >
-                  Go premium — $797 →
+                  Most pick this — $700 →
                 </a>
               </div>
             </div>
@@ -483,12 +545,26 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="mt-auto border-t border-[#1F1814]/10 bg-[#F0E9DC]">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-4 px-6 py-10 sm:flex-row sm:items-center">
+        <div className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10 sm:grid-cols-3 sm:items-center">
           <div className="font-mono text-sm text-[#1F1814]/60">
             wediditforyou<span className="text-[#C2410C]">.</span> — websites,
             already built.
           </div>
-          <div className="text-sm text-[#1F1814]/40">
+          <nav className="flex flex-wrap items-center justify-start gap-x-6 gap-y-2 text-sm sm:justify-center">
+            <a
+              href="/privacy"
+              className="text-[#1F1814]/70 underline-offset-4 hover:text-[#C2410C] hover:underline"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="mailto:info@wedidit4you.com"
+              className="text-[#1F1814]/70 underline-offset-4 hover:text-[#C2410C] hover:underline"
+            >
+              info@wedidit4you.com
+            </a>
+          </nav>
+          <div className="text-sm text-[#1F1814]/40 sm:text-right">
             © {new Date().getFullYear()} wediditforyou. All rights reserved.
           </div>
         </div>

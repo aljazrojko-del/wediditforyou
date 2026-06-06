@@ -23,3 +23,22 @@ html,
 body {
   scroll-behavior: smooth;
 }
+
+@keyframes premium-pulse {
+  0%, 100% {
+    box-shadow: 0 50px 120px -20px rgba(194, 65, 12, 0.6);
+  }
+  50% {
+    box-shadow: 0 50px 140px -15px rgba(194, 65, 12, 0.85);
+  }
+}
+
+.premium-glow {
+  animation: premium-pulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .premium-glow {
+    animation: none;
+  }
+}
