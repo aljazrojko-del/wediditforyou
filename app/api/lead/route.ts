@@ -12,6 +12,8 @@ type LeadPayload = {
   notes?: unknown;
   logoUrl?: unknown;
   photoUrls?: unknown;
+  smsConsent?: unknown;
+  smsConsentAt?: unknown;
 };
 
 function str(v: unknown): string {
@@ -43,7 +45,21 @@ export async function POST(req: Request) {
     notes: str(body.notes),
     logoUrl: str(body.logoUrl),
     photoUrls: strArray(body.photoUrls),
+    smsConsent: body.smsConsent === true,
+    smsConsentAt: typeof body.smsConsentAt === "string" ? body.smsConsentAt : null,
   };
+
+  // SMS consent is required by the carrier for any phone-based follow-up.
+  // Block submissions that ticked the box client-side but were tampered with.
+  if (!fields.smsConsent) {
+    return NextResponse.json(
+      {
+        error:
+          "Please confirm SMS consent so we can text you the preview URL.",
+      },
+      { status: 400 },
+    );
+  }
 
   const required: Array<"name" | "email" | "phone" | "businessName" | "niche" | "location"> = [
     "name",
