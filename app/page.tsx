@@ -524,10 +524,10 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Reach a human */}
+            {/* Reach out to us */}
             <div>
               <p className="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-[#1F1814]/55">
-                Reach a human
+                Reach out to us
               </p>
               <a
                 href="mailto:info@wedidit4you.com"
@@ -536,7 +536,7 @@ export default function Home() {
                 info@wedidit4you.com
               </a>
               <p className="mt-1 text-xs text-[#1F1814]/55">
-                Alex answers every email himself, usually within a few hours.
+                Alex answers every email personally, usually within a few hours.
               </p>
             </div>
 

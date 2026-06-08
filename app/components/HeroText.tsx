@@ -63,8 +63,8 @@ export default function HeroText() {
       </h1>
 
       <p className="hero-sub mt-6 max-w-xl text-lg leading-relaxed text-[#1F1814]/70 sm:text-xl">
-        Most mobile-service owners we talk to say they lose{" "}
-        <span className="font-semibold text-[#1F1814]">2–3 jobs a month</span>{" "}
+        Mobile-service businesses lose an average of{" "}
+        <span className="font-semibold text-[#1F1814]">3–5 jobs a week</span>{" "}
         to competitors who show up on Google. We research your business and
         design the site for you — live in 24 hours — and you pay{" "}
         <span className="font-semibold text-[#1F1814]">$0 until you approve it</span>.
