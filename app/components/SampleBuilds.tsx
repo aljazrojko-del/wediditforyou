@@ -28,12 +28,27 @@ const BUILDS: Build[] = [
     imgSrc:
       "https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1400&q=80&auto=format&fit=crop",
     headline: "Houston's mobile mechanic. We come to you.",
-    chip: "Call now ⚙",
+    chip: "Call now",
     chipBg: "#FF6B00",
     chipFg: "#0F1216",
     headlineFont: "Inter Tight, system-ui, sans-serif",
     headlineWeight: 800,
     headlineTransform: "uppercase",
+  },
+  {
+    href: "/demo/greenline-landscape",
+    business: "Greenline Landscape Co.",
+    niche: "Landscaper",
+    city: "Austin, TX",
+    domain: "greenline.wediditforyou.com",
+    imgSrc:
+      "https://images.unsplash.com/photo-1635108201275-b1863fcb9eeb?w=1400&q=80&auto=format&fit=crop",
+    headline: "Austin yards, done right since 2014.",
+    chip: "Get a free quote →",
+    chipBg: "#E8DCC4",
+    chipFg: "#1F3A2E",
+    headlineFont: "DM Serif Display, Georgia, serif",
+    headlineWeight: 400,
   },
   {
     href: "/demo/reyes-plumbing",
@@ -44,7 +59,7 @@ const BUILDS: Build[] = [
     imgSrc:
       "https://images.unsplash.com/photo-1620653713380-7a34b773fef8?w=1400&q=80&auto=format&fit=crop",
     headline: "Phoenix plumbing. Done right.",
-    chip: "Call now ☎",
+    chip: "Call now",
     chipBg: "#FBBF24",
     chipFg: "#0A1F44",
     headlineFont: "Inter Tight, system-ui, sans-serif",
@@ -66,21 +81,6 @@ const BUILDS: Build[] = [
     headlineFont: "Cormorant Garamond, Georgia, serif",
     headlineWeight: 500,
   },
-  {
-    href: "/demo/greenline-landscape",
-    business: "Greenline Landscape Co.",
-    niche: "Landscaper",
-    city: "Austin, TX",
-    domain: "greenline.wediditforyou.com",
-    imgSrc:
-      "https://images.unsplash.com/photo-1635108201275-b1863fcb9eeb?w=1400&q=80&auto=format&fit=crop",
-    headline: "Austin yards, done right since 2014.",
-    chip: "Get a free quote →",
-    chipBg: "#E8DCC4",
-    chipFg: "#1F3A2E",
-    headlineFont: "DM Serif Display, Georgia, serif",
-    headlineWeight: 400,
-  },
 ];
 
 export default function SampleBuilds() {
@@ -95,10 +95,10 @@ export default function SampleBuilds() {
             Sample builds
           </p>
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            We&apos;ve already built these. The owners don&apos;t know yet.
+            Sites we&apos;ve already built. Yours would be next.
           </h2>
           <p className="mt-6 max-w-2xl text-lg text-[#1F1814]/70">
-            Each preview below is a live site we built by hand for a real
+            Each preview below is a live site we built on spec for a real local
             business — different niche, different design, different feel. Click
             any to walk through it.
           </p>

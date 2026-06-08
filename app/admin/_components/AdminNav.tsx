@@ -18,6 +18,9 @@ export default function AdminNav() {
           <Link href="/admin/inbox" className="text-sm text-zinc-400 hover:text-zinc-100">
             Inbox
           </Link>
+          <Link href="/admin/onboarding" className="text-sm text-zinc-400 hover:text-zinc-100">
+            Onboarding
+          </Link>
         </div>
         <SignOutButton />
       </div>

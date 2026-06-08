@@ -24,6 +24,7 @@ import {
   thirtyDayDeadline,
   packageFromAmount,
 } from "@/lib/stripe";
+import { sendWelcomeSms } from "@/lib/welcome";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -132,6 +133,21 @@ async function handleCheckoutCompleted(
       },
       { onConflict: "lead_id" },
     );
+
+    // Welcome SMS — fire-and-forget, errors logged but do not break the webhook.
+    // The lead.welcome_sms_sent_at check inside makes this safe against
+    // duplicate webhook deliveries.
+    try {
+      const welcomeRes = await sendWelcomeSms(lead.id, supabase);
+      if (!welcomeRes.ok) {
+        console.warn(
+          "[stripe-webhook] welcome sms",
+          welcomeRes.skipped ?? welcomeRes.error,
+        );
+      }
+    } catch (e) {
+      console.error("[stripe-webhook] welcome sms crashed:", (e as Error).message);
+    }
   }
 
   return { ok: true, notes: lead ? `matched lead ${lead.slug ?? lead.id}` : "no lead match" };

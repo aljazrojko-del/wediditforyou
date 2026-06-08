@@ -405,15 +405,20 @@ export default function ContactForm() {
               <input
                 id="onlineLink"
                 name="onlineLink"
-                type="url"
+                type="text"
                 autoComplete="url"
                 className={inputCls}
-                placeholder="Google Business, Instagram, Yelp, Facebook…"
+                placeholder="Google Business, Facebook, Yelp — or just your phone number"
               />
               <p className="text-xs text-[#1F1814]/55">
-                If you have a Google Business Profile, Instagram, or Yelp page,
-                share it — we&apos;ll use your existing photos and reviews so
-                you don&apos;t have to send anything.
+                Got a Google Business Profile, Facebook page, or Yelp listing?
+                Drop the link and we&apos;ll pull your photos and reviews
+                automatically.{" "}
+                <span className="font-semibold text-[#1F1814]/75">
+                  Don&apos;t have any of those?
+                </span>{" "}
+                Leave this blank or just type your business phone number —
+                we&apos;ll find what we need.
               </p>
             </div>
           </fieldset>

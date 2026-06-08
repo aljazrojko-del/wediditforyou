@@ -24,21 +24,36 @@ body {
   scroll-behavior: smooth;
 }
 
-@keyframes premium-pulse {
-  0%, 100% {
-    box-shadow: 0 50px 120px -20px rgba(194, 65, 12, 0.6);
-  }
-  50% {
-    box-shadow: 0 50px 140px -15px rgba(194, 65, 12, 0.85);
-  }
+/* Premium card uses a strong static shadow (set inline). No infinite animation. */
+.premium-glow {
+  box-shadow: 0 50px 120px -20px rgba(194, 65, 12, 0.6);
 }
 
-.premium-glow {
-  animation: premium-pulse 4s ease-in-out infinite;
+/* Button press feedback — applies to every primary action */
+.btn,
+.btn-primary,
+button[type="submit"],
+a[class*="bg-[#C2410C]"],
+a[class*="from-[#C2410C]"] {
+  transition: transform 100ms ease-out, background-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.btn:active,
+.btn-primary:active,
+button[type="submit"]:active,
+a[class*="bg-[#C2410C]"]:active,
+a[class*="from-[#C2410C]"]:active {
+  transform: scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .premium-glow {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

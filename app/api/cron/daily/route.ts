@@ -15,12 +15,22 @@
 //   - draft-emails (run manually after a batch finishes generating)
 
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { enrichAll } from "@/scripts/enrich-leads";
 import { generateAll } from "@/scripts/generate-sites";
+import { sendReviewRequests } from "@/lib/review-sms";
+import { sendReminders } from "@/lib/reminders";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
+
+function makeSupabase() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase env missing");
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization") ?? "";
@@ -41,6 +51,8 @@ export async function GET(req: Request) {
     finishedAt?: string;
     enrich?: Awaited<ReturnType<typeof enrichAll>>;
     generate?: Awaited<ReturnType<typeof generateAll>>;
+    reviewSms?: Awaited<ReturnType<typeof sendReviewRequests>>;
+    reminders?: Awaited<ReturnType<typeof sendReminders>>;
     errors: string[];
   } = { startedAt, errors: [] };
 
@@ -57,6 +69,24 @@ export async function GET(req: Request) {
   } catch (err) {
     result.errors.push(
       `generate: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  try {
+    const supabase = makeSupabase();
+    result.reviewSms = await sendReviewRequests(supabase, { limit: 20 });
+  } catch (err) {
+    result.errors.push(
+      `review-sms: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  try {
+    const supabase = makeSupabase();
+    result.reminders = await sendReminders(supabase);
+  } catch (err) {
+    result.errors.push(
+      `reminders: ${err instanceof Error ? err.message : String(err)}`,
     );
   }
 

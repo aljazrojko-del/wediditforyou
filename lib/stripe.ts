@@ -75,12 +75,18 @@ export function thirtyDayDeadline(fromIso: string): string {
   return new Date(new Date(fromIso).getTime() + THIRTY_DAYS_MS).toISOString();
 }
 
-export type PackageType = "starter" | "premium" | "split" | "unknown";
+export type PackageType = "starter" | "premium" | "unknown";
 
 export function packageFromAmount(amountCents: number | null | undefined): PackageType {
   if (!amountCents) return "unknown";
+  // Full one-time payments
+  if (amountCents === 70000) return "premium";          // $700 Premium full
+  if (amountCents === 45000) return "starter";          // $450 Starter full
+  // Split payments — each cycle is half the full price
+  if (amountCents === 35000) return "premium";          // $350 × 2 = Premium split
+  if (amountCents === 22500) return "starter";          // $225 × 2 = Starter split
+  // Legacy prices, kept in case any old links are still floating around
   if (amountCents >= 79000 && amountCents <= 80000) return "premium";   // $797
   if (amountCents >= 29000 && amountCents <= 30000) return "starter";   // $297
-  if (amountCents >= 14000 && amountCents <= 15000) return "split";     // $149/wk × 2
   return "unknown";
 }

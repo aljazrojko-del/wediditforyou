@@ -64,20 +64,39 @@ export default function Hero3D() {
       const stage = stageRef.current;
       if (!stage) return;
 
-      // Initial entrance — cards fly in
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+
+      if (reduceMotion) return;
+
+      // Initial entrance — restrained, no rotate
       cardsRef.current.forEach((card, i) => {
         if (!card) return;
         gsap.from(card, {
           opacity: 0,
-          y: 60,
-          rotateY: -25,
-          duration: 0.9,
-          delay: 0.2 + i * 0.12,
+          y: 24,
+          duration: 0.6,
+          delay: 0.15 + i * 0.08,
           ease: "power3.out",
         });
       });
 
-      // Mouse parallax
+      // Skip mouse parallax on touch devices — they cause jank, never get used
+      if (isCoarse) return;
+
+      // Smooth parallax via quickTo (matches mouse without per-event tween churn)
+      const setters = cardsRef.current.map((card) => {
+        if (!card) return null;
+        return {
+          x: gsap.quickTo(card, "x", { duration: 0.4, ease: "power3.out" }),
+          y: gsap.quickTo(card, "y", { duration: 0.4, ease: "power3.out" }),
+          rotateY: gsap.quickTo(card, "rotateY", { duration: 0.4, ease: "power3.out" }),
+          rotateX: gsap.quickTo(card, "rotateX", { duration: 0.4, ease: "power3.out" }),
+        };
+      });
+
       const onMove = (e: MouseEvent) => {
         const rect = stage.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
@@ -85,31 +104,23 @@ export default function Hero3D() {
         const x = (e.clientX - cx) / rect.width;
         const y = (e.clientY - cy) / rect.height;
 
-        cardsRef.current.forEach((card, i) => {
-          if (!card) return;
+        setters.forEach((set, i) => {
+          if (!set) return;
           const depth = (i - 1) * 12; // -12, 0, 12
-          gsap.to(card, {
-            x: x * (20 + depth),
-            y: y * (12 + depth * 0.5),
-            rotateY: x * -8,
-            rotateX: y * 6,
-            duration: 0.8,
-            ease: "power2.out",
-          });
+          set.x(x * (20 + depth));
+          set.y(y * (12 + depth * 0.5));
+          set.rotateY(x * -8);
+          set.rotateX(y * 6);
         });
       };
 
       const onLeave = () => {
-        cardsRef.current.forEach((card) => {
-          if (!card) return;
-          gsap.to(card, {
-            x: 0,
-            y: 0,
-            rotateY: 0,
-            rotateX: 0,
-            duration: 1.2,
-            ease: "power3.out",
-          });
+        setters.forEach((set) => {
+          if (!set) return;
+          set.x(0);
+          set.y(0);
+          set.rotateY(0);
+          set.rotateX(0);
         });
       };
 
@@ -126,7 +137,7 @@ export default function Hero3D() {
   return (
     <div
       ref={stageRef}
-      className="relative mx-auto h-[420px] w-full max-w-md overflow-hidden sm:h-[520px] lg:max-w-none"
+      className="relative mx-auto aspect-[4/5] w-full max-w-sm sm:aspect-auto sm:h-[520px] sm:max-w-md lg:max-w-none"
       style={{ perspective: "1400px", transformStyle: "preserve-3d" }}
     >
       {CARDS.map((c, i) => (

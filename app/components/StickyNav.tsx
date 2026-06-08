@@ -35,12 +35,12 @@ export default function StickyNav() {
           scrolled ? "py-3.5" : "py-5"
         }`}
       >
-        {/* Logo with branded mark */}
+        {/* Logo — flat color, the CTA carries the gradient */}
         <a
           href="#top"
           className="group flex items-center gap-2.5 text-[#1F1814]"
         >
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#C2410C] to-[#E89A6B] text-[13px] font-bold text-white shadow-sm transition group-hover:scale-105">
+          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2410C] text-[13px] font-bold text-white shadow-sm transition group-hover:scale-105">
             W
           </span>
           <span className="font-mono text-sm tracking-tight">
@@ -71,15 +71,24 @@ export default function StickyNav() {
           </a>
         </nav>
 
-        {/* CTA with peach glow */}
-        <a
-          href="#contact"
-          className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C2410C]/30 transition hover:shadow-lg hover:shadow-[#C2410C]/40"
-        >
-          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-          <span className="relative">Get yours</span>
-          <span className="relative text-[#FAF6F0]/80">→</span>
-        </a>
+        {/* Right side: email + CTA */}
+        <div className="flex items-center gap-3">
+          <a
+            href="mailto:info@wedidit4you.com"
+            className="hidden items-center gap-1.5 text-xs font-medium text-[#1F1814]/65 transition hover:text-[#C2410C] md:inline-flex"
+            aria-label="Email info@wedidit4you.com"
+          >
+            <span className="font-mono">info@wedidit4you.com</span>
+          </a>
+          <a
+            href="#contact"
+            className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-gradient-to-r from-[#C2410C] to-[#9A3412] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C2410C]/30 transition hover:shadow-lg hover:shadow-[#C2410C]/40"
+          >
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+            <span className="relative">Get yours</span>
+            <span className="relative text-[#FAF6F0]/80">→</span>
+          </a>
+        </div>
       </div>
 
       {/* Scroll progress */}

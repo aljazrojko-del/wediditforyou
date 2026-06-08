@@ -56,14 +56,21 @@ async function loadLeads(params: { city?: string; status?: string; niche?: strin
   const siteOrigin = process.env.SITE_ORIGIN ?? "https://wedidit4you.com";
   return (
     (data ?? []) as Array<
-      Omit<LeadRowData, "buy_link_starter" | "buy_link_premium" | "customer_link"> & {
-        customer_admin_token: string | null;
-      }
+      Omit<
+        LeadRowData,
+        | "buy_link_starter_full"
+        | "buy_link_starter_split"
+        | "buy_link_premium_full"
+        | "buy_link_premium_split"
+        | "customer_link"
+      > & { customer_admin_token: string | null }
     >
   ).map((l) => ({
     ...l,
-    buy_link_starter: buildBuyLink("starter", { slug: l.slug, email: l.email }),
-    buy_link_premium: buildBuyLink("premium", { slug: l.slug, email: l.email }),
+    buy_link_starter_full: buildBuyLink("starter-full", { slug: l.slug, email: l.email }),
+    buy_link_starter_split: buildBuyLink("starter-split", { slug: l.slug, email: l.email }),
+    buy_link_premium_full: buildBuyLink("premium-full", { slug: l.slug, email: l.email }),
+    buy_link_premium_split: buildBuyLink("premium-split", { slug: l.slug, email: l.email }),
     customer_link: l.customer_admin_token
       ? `${siteOrigin}/my-site/${l.customer_admin_token}`
       : null,

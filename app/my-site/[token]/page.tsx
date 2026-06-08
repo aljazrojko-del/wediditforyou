@@ -5,6 +5,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import ChangeRequestForm from "./ChangeRequestForm";
+import DomainForm from "./DomainForm";
 
 export const dynamic = "force-dynamic";
 
@@ -18,25 +19,40 @@ type LeadView = {
   tier: string | null;
 };
 
-async function loadLead(token: string): Promise<LeadView | null> {
+type OnboardingView = {
+  domain_requested: string | null;
+  domain_registered: string | null;
+  stage: string;
+};
+
+async function loadLeadAndOnboarding(
+  token: string,
+): Promise<{ lead: LeadView; onboarding: OnboardingView | null } | null> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   const supabase = createClient(url, key, { auth: { persistSession: false } });
-  const { data } = await supabase
+  const { data: lead } = await supabase
     .from("leads")
     .select("id, name, slug, city, site_url, payment_status, tier")
     .eq("customer_admin_token", token)
     .maybeSingle<LeadView>();
-  return data ?? null;
+  if (!lead) return null;
+  const { data: onboarding } = await supabase
+    .from("onboarding_state")
+    .select("domain_requested, domain_registered, stage")
+    .eq("lead_id", lead.id)
+    .maybeSingle<OnboardingView>();
+  return { lead, onboarding: onboarding ?? null };
 }
 
 export default async function MySitePage(
   props: { params: Promise<{ token: string }> },
 ) {
   const { token } = await props.params;
-  const lead = await loadLead(token);
-  if (!lead) notFound();
+  const ctx = await loadLeadAndOnboarding(token);
+  if (!ctx) notFound();
+  const { lead, onboarding } = ctx;
 
   return (
     <main className="min-h-screen bg-[#FAF6F0] text-[#1F1814]">
@@ -58,6 +74,22 @@ export default async function MySitePage(
           >
             View live site ↗
           </a>
+        )}
+
+        {onboarding && (
+          <div className="mt-12 rounded-3xl border border-[#1F1814]/10 bg-white p-7 sm:p-10">
+            <h2 className="text-xl font-semibold">Your domain</h2>
+            <p className="mt-2 text-sm text-[#1F1814]/65">
+              Pick the .com you want to be known by. We register it instantly and
+              your site goes live at that address.
+            </p>
+            <div className="mt-5">
+              <DomainForm
+                token={token}
+                existingDomain={onboarding.domain_registered}
+              />
+            </div>
+          </div>
         )}
 
         <div className="mt-12 rounded-3xl border border-[#1F1814]/10 bg-white p-7 sm:p-10">

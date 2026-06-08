@@ -47,16 +47,27 @@ export default function Founder() {
           </div>
 
           <div className="mt-8 flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#C2410C] text-lg font-semibold text-white">
-              A
+            {/*
+              TODO Alex: drop a real headshot at public/alex.jpg, then replace this
+              initials avatar with: <Image src="/alex.jpg" alt="Alex Rojko" fill className="object-cover" />
+              Real photo is the #1 missing trust signal per buyer audit.
+            */}
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1F1814]/15 bg-gradient-to-br from-[#C2410C] to-[#9A3412] font-mono text-base font-bold tracking-tight text-white shadow-sm">
+              AR
             </div>
             <div>
               <div className="text-sm font-semibold text-[#1F1814]">
-                Alex
+                Alex Rojko
               </div>
               <div className="text-xs uppercase tracking-[0.2em] text-[#1F1814]/55">
-                Founder · wediditforyou
+                Founder · I answer every email myself
               </div>
+              <a
+                href="mailto:info@wedidit4you.com"
+                className="mt-1 inline-block font-mono text-xs text-[#C2410C] underline-offset-2 hover:underline"
+              >
+                info@wedidit4you.com
+              </a>
             </div>
           </div>
         </ScrollReveal>

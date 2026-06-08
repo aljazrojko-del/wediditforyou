@@ -18,14 +18,21 @@ export type LeadRowData = {
   call_placed_at: string | null;
   inbound_count: number;
   last_inbound_at: string | null;
-  buy_link_starter: string | null;
-  buy_link_premium: string | null;
+  buy_link_starter_full: string | null;
+  buy_link_starter_split: string | null;
+  buy_link_premium_full: string | null;
+  buy_link_premium_split: string | null;
   payment_status: string | null;
   tier: string | null;
   customer_link: string | null;
 };
 
-type CopyKind = "starter" | "premium" | "customer";
+type CopyKind =
+  | "starter-full"
+  | "starter-split"
+  | "premium-full"
+  | "premium-split"
+  | "customer";
 
 export default function LeadRow({ lead }: { lead: LeadRowData }) {
   const [smsBusy, setSmsBusy] = useState(false);
@@ -133,24 +140,44 @@ export default function LeadRow({ lead }: { lead: LeadRowData }) {
           >
             {callBusy ? "…" : "Call"}
           </button>
-          {lead.buy_link_starter && (
+          {lead.buy_link_starter_full && (
             <button
               type="button"
-              onClick={() => copy(lead.buy_link_starter!, "starter")}
-              title="Copy $450 buy link with this lead's slug baked in"
+              onClick={() => copy(lead.buy_link_starter_full!, "starter-full")}
+              title="Copy $450 Starter (one-time) buy link with slug baked in"
               className="px-3 py-1.5 text-xs rounded bg-emerald-700/40 hover:bg-emerald-700/60 text-emerald-200"
             >
-              {copied === "starter" ? "✓ copied" : "$450"}
+              {copied === "starter-full" ? "✓ copied" : "$450"}
             </button>
           )}
-          {lead.buy_link_premium && (
+          {lead.buy_link_starter_split && (
             <button
               type="button"
-              onClick={() => copy(lead.buy_link_premium!, "premium")}
-              title="Copy $700 Premium buy link"
+              onClick={() => copy(lead.buy_link_starter_split!, "starter-split")}
+              title="Copy Starter split (2×$225 weekly) buy link — use only when prospect objects on price"
+              className="px-3 py-1.5 text-xs rounded bg-emerald-700/20 hover:bg-emerald-700/40 text-emerald-300/80"
+            >
+              {copied === "starter-split" ? "✓ copied" : "2×$225"}
+            </button>
+          )}
+          {lead.buy_link_premium_full && (
+            <button
+              type="button"
+              onClick={() => copy(lead.buy_link_premium_full!, "premium-full")}
+              title="Copy $700 Premium (one-time) buy link"
               className="px-3 py-1.5 text-xs rounded bg-amber-700/40 hover:bg-amber-700/60 text-amber-200"
             >
-              {copied === "premium" ? "✓ copied" : "$700"}
+              {copied === "premium-full" ? "✓ copied" : "$700"}
+            </button>
+          )}
+          {lead.buy_link_premium_split && (
+            <button
+              type="button"
+              onClick={() => copy(lead.buy_link_premium_split!, "premium-split")}
+              title="Copy Premium split (2×$350 weekly) buy link — use only when prospect objects on price"
+              className="px-3 py-1.5 text-xs rounded bg-amber-700/20 hover:bg-amber-700/40 text-amber-300/80"
+            >
+              {copied === "premium-split" ? "✓ copied" : "2×$350"}
             </button>
           )}
           {lead.customer_link && lead.payment_status === "paid" && (

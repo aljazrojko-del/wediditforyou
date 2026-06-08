@@ -77,16 +77,14 @@ export default function CaseStudies() {
                 <div className="text-xs font-mono text-[#1F1814]/45">
                   {b.business}
                 </div>
-                <blockquote
-                  className="mt-3 text-xl leading-tight tracking-tight text-[#1F1814]"
+                <p
+                  className="mt-3 text-xl font-semibold leading-tight tracking-tight text-[#1F1814]"
                   style={{
-                    fontFamily: "Cormorant Garamond, Georgia, serif",
-                    fontStyle: "italic",
-                    fontWeight: 500,
+                    fontFamily: "Inter Tight, system-ui, sans-serif",
                   }}
                 >
-                  &ldquo;{b.headline}&rdquo;
-                </blockquote>
+                  {b.headline}
+                </p>
                 <p className="mt-4 text-xs text-[#1F1814]/55">
                   {b.builtIn}
                 </p>
@@ -121,16 +119,14 @@ export default function CaseStudies() {
               <div className="text-xs font-mono text-[#C2410C]/70">
                 Your business · Your city
               </div>
-              <blockquote
-                className="mt-3 text-xl leading-tight tracking-tight text-[#C2410C]"
+              <p
+                className="mt-3 text-xl font-semibold leading-tight tracking-tight text-[#C2410C]"
                 style={{
-                  fontFamily: "Cormorant Garamond, Georgia, serif",
-                  fontStyle: "italic",
-                  fontWeight: 500,
+                  fontFamily: "Inter Tight, system-ui, sans-serif",
                 }}
               >
-                &ldquo;Your custom headline here.&rdquo;
-              </blockquote>
+                Your custom headline here.
+              </p>
               <p className="mt-4 text-xs text-[#1F1814]/55">
                 Be the first founding client. Free site if it&apos;s
                 not&nbsp;live within 24 hours.
