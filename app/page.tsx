@@ -11,6 +11,7 @@ import SampleBuilds from "./components/SampleBuilds";
 import ScrollReveal from "./components/ScrollReveal";
 import StatsStrip from "./components/StatsStrip";
 import StickyNav from "./components/StickyNav";
+import Testimonials from "./components/Testimonials";
 
 const FOCUS_NICHES = [
   {
@@ -194,6 +195,8 @@ export default function Home() {
       </section>
 
       <SampleBuilds />
+
+      <Testimonials />
 
       <CaseStudies />
 
