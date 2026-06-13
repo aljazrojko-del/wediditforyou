@@ -1,6 +1,6 @@
 # Premium Tier — Delivery Spec
 
-Premium tier sells for **$797** and includes **8 components** stacked at
+Premium tier sells for **$700** and includes **8 components** stacked at
 **$2,600 value**. This doc spells out:
 
 - What each component is
@@ -249,7 +249,7 @@ Copy-paste this into a Google Doc or Notion when a Premium sale closes:
 | **Total marginal cost** | **<$1 per Premium client** |
 
 Gross margin per Premium sale (after Stripe fee):
-- $797 - $25 (Stripe) - $1 (tools) = **$771 = 96.7% margin**
+- $700 - $25 (Stripe) - $1 (tools) = **$771 = 96.7% margin**
 
 ---
 
@@ -262,7 +262,7 @@ At that point:
 
 1. Hire a VA at $8-12/hr to handle the manual parts of items #3, #4, #5,
    #7, #8 (GBP, directories, booking, reports, support). Cost: ~$10/hr ×
-   2hrs/client × 30 clients = $600. Net per client: $797 - $26 (Stripe) -
+   2hrs/client × 30 clients = $600. Net per client: $700 - $26 (Stripe) -
    $1 (tools) - $20 (VA) = **$750 = 94% margin**.
 
 2. Keep items #1, #2, #6 in-house (all AI-driven, fully automated).

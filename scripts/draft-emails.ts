@@ -25,9 +25,9 @@ We took your public Google business data and built you a preview, free of charge
 
 If you like what you see, we can either jump on a quick 15-minute call to walk through any changes you'd want, or you can simply reply to this email with edits, photos to add, or anything you'd like adjusted.
 
-This preview is completely free. If you decide you want it live, we'll register your domain and prepare the final website within 24 hours. The price is $297 one-time — we're running a founding-client offer for our first 10 paying customers ({N} of {TOTAL} spots still open). After that, the price goes back to $497.
+This preview is completely free. If you decide you want it live, we'll register your domain and prepare the final website within 24 hours. The price is $450 one-time — we're running a founding-client offer for our first 10 paying customers ({N} of {TOTAL} spots still open). After that, the price goes back to $700.
 
-Why we're doing this: most {niche_plural} without a website lose roughly {volume_loss} — around {money_loss}/month — to competitors who show up on Google when customers search. The website fixes that. And if you don't get a single customer inquiry from it in the first 30 days, we'll refund your $297 and you can keep the site.
+Why we're doing this: most {niche_plural} without a website lose roughly {volume_loss} — around {money_loss}/month — to competitors who show up on Google when customers search. The website fixes that. And if you don't get a single customer inquiry from it in the first 30 days, we'll refund your $450 and you can keep the site.
 
 No pressure, no deposit, no commitment. Just take a look and let me know what you think.
 
