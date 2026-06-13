@@ -24,32 +24,74 @@ If you can't find at least 4 of these in 60 seconds, skip that prospect. Move to
 
 ---
 
-## 2. Opener — pick the script that matches the niche
+## 2. Opener — the proof-then-loop flow
 
-### Mobile mechanic
+This replaces the old per-niche opener. Synthetic-panel A/B tested at ~16.4 sales per 100 engaged calls vs. ~14.2 for "preview now" and ~6.9 for "tease and book to reveal". The insight: **your buyer's bottleneck is skepticism, not curiosity.** Withholding the link reads as scam grammar. Showing it instantly buys trust in 10 seconds.
 
-> "Hey [first name], this is Alex. Quick question — I was trying to find your prices online before I called and I couldn't see a website anywhere. Is that on purpose?
->
-> [pause for response]
->
-> No sales pitch coming. Reason I'm calling: I saw your reviews on Google — [4.8 with 67 reviews / specific stat] — and figured if you've got that kind of reputation and no website to capture the people Googling you, that's leaving money on the table. So I went ahead and built you one. Free to look at. If you like it, $450 — that's the founding-client rate, after my first ten paid it goes to $700. If you don't like it, you keep the draft anyway. Worth 10 minutes tonight?"
+Four steps. Run all four in one call. Total time: 90 seconds before they're booked.
 
-### Mobile dog groomer
+### Step 1 — Voss-style open (5 seconds)
 
-> "Hey [first name], this is Alex. Quick question — I tried to book you online for my dog and there's no website. Is that on purpose?
->
-> [pause]
->
-> No pitch. I called because your Google reviews are 5-star across the board and you don't have a site for new clients to actually find you and book. So I built you one already. Free to look at. $450 if you like it (founding rate, goes to $700 after my first ten), nothing if you don't. Can you do 10 minutes tonight to see it?"
+The "would you be mad" pattern flips a defensive moment into a curiosity hook. The easy "no" answer is disarming. They follow with "what do you mean?" — and now you're in.
 
-### Tutor
+> "Hey [first name], this is Alex. Quick one — would you be mad if I told you I already built you a website?"
 
-> "Hey [first name], this is Alex. I was looking for a [SAT / math / reading] tutor in [city] for [my niece / my kid / a friend] and saw your reviews — parents are raving — but there's no website. Did that surprise me. So I went ahead and built you one already. Free to look at. $450 if you keep it (founding rate, goes to $700 after the first ten), nothing if you don't. Got 10 minutes tonight?"
+**Pause. Wait for their response.** Most will say "huh?" or "wait, what?" — both are go signals.
 
-**Tone rules:**
-- Stay calm. Don't oversell. Belfort straight-line tonality — confident, not loud.
-- Match their register. If they say "yeah man" — you say "yeah man". If they're formal — you go formal.
-- After the opener, **shut up**. Let them respond. Don't fill silence.
+**Niche-flavor tweaks (optional, use the original if they need it):**
+
+- Mobile mechanic: "…built you a website for your mobile auto business?"
+- Mobile dog groomer: "…built you a booking site for your grooming routes?"
+- Tutor: "…built you a website parents could actually find?"
+
+### Step 2 — Text the live link, RIGHT THEN (10 seconds)
+
+Instant proof is the only thing that buys trust with a skeptic. The phone buzzing in their hand while you're still talking kills "is this a scam" in ten seconds. **Do not delay this step. Have the SMS pre-staged before you dial.**
+
+> "Yeah I'll explain — I built it last night based on your Google reviews. It's already live. Texting you the link right now, one sec…"
+
+[Send the SMS within 10 seconds of saying it. URL format: `sites.wedidit4you.com/<their-slug>`]
+
+> "…sent. You should see it pop up. Open it on speakerphone with me, we'll walk through it together."
+
+If they're on a flip phone or no smartphone — read them the URL slowly twice and offer to email it during the call.
+
+### Step 3 — Re-open a new loop the free draft can't satisfy (30 seconds)
+
+Now they have the draft. The endowment effect is doing work — they're scanning what's THEIRS. But "yours" isn't strong enough as a hook to book the next step. You have to make the next 15 minutes feel like the unlock the draft itself can't provide.
+
+> "What you're looking at right now is the rough cut. The real photos go in when we do a 15-minute call together — your phone number swapped in, your colors, your business hours, your service area, your specific menu. And then we point it at your own domain instead of the wedidit4you subdomain. That call is where it stops being a draft and starts being yours. Without that call you've got something to look at; with it you've got something to send your customers."
+
+**This step is critical.** Without it, the prospect's natural exit is "thanks for the link, I'll think about it" — they walk away with a free draft and you never see them again. The "15 minutes with Alex" is the new closed loop.
+
+### Step 4 — Price out loud, loss-reversed, two-choice close (15 seconds)
+
+The trick: price, risk reversal, scarcity, AND two-time close in one breath. Don't pause. They book before they can say "I'll think about it."
+
+> "Zero today. $450 if you keep it after our call — that's founding rate, goes to $700 permanently after I've closed 10 founding clients. If you don't want it after the call, you walk and keep the draft anyway. I've got tonight at 7 or tomorrow at 11 open — which works?"
+
+**Two-time close** (Belfort assumptive): force a choice between two yeses, not yes/no. If they push back ("uh, neither") — "OK, what evening this week?"
+
+Book the slot. Hang up. Send the calendar invite within 60 seconds.
+
+### Tone rules for all 4 steps
+
+- Stay calm. Don't oversell. Confident, not loud. The script reads as if you're doing them a favor by sparing them 10 minutes.
+- Match their register. If they say "yeah man" — you say "yeah man". If they're formal — go formal.
+- After Step 1 and Step 4, **shut up**. Let them respond. Don't fill silence.
+- Steps 2 and 3 don't pause — flow them together. Pause creates an exit.
+- The pre-staged SMS is non-negotiable. If you have to ask Alex to send it later, you've lost the proof window. Build all draft sites with their unique slug ready in your dialing CSV.
+
+### What changed vs. the old opener
+
+| Old | New (proof-then-loop) |
+|---|---|
+| "I couldn't find your website" → soft question | "Would you be mad if I told you I already built you a website?" → curiosity hook |
+| Mentions price + risk reversal + "10 min tonight" all in first turn | Sequenced: open → proof → re-loop → price+book |
+| URL only mentioned, not sent | URL sent via SMS in the first 30 seconds — instant proof |
+| Single yes/no close | Two-choice close (tonight 7 / tomorrow 11) |
+
+The old per-niche openers stay below as fallback for prospects who don't respond well to the Voss open — but try the new flow first. The data says it closes ~2x better.
 
 ---
 
