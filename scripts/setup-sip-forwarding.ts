@@ -2,21 +2,19 @@
 // incoming calls ring Zoiper on Alex's phone instead of burning international
 // minutes to the Slovenian mobile.
 //
-// Run with:
-//   npx tsx scripts/setup-sip-forwarding.ts            # dry-run, shows changes
-//   npx tsx scripts/setup-sip-forwarding.ts --apply    # actually mutates
-//   npx tsx scripts/setup-sip-forwarding.ts --revert   # restores INBOUND_FORWARD_TO route
+// Run with (Node 22+ uses --env-file natively — no dotenv install needed):
+//   node --env-file=.env.local --import tsx scripts/setup-sip-forwarding.ts            # dry-run, shows changes
+//   node --env-file=.env.local --import tsx scripts/setup-sip-forwarding.ts --apply    # actually mutates
+//   node --env-file=.env.local --import tsx scripts/setup-sip-forwarding.ts --revert   # restores INBOUND_FORWARD_TO route
 //
 // Env required (in .env.local):
 //   SIGNALWIRE_PROJECT_ID
 //   SIGNALWIRE_TOKEN
 //   SIGNALWIRE_SPACE_URL
 //   SITE_ORIGIN              — e.g. https://wedidit4you.com (where the TwiML route lives)
-//   SIP_FORWARD_USERNAME     — e.g. "alex" (whatever you set in SignalWire console)
-//   SIP_FORWARD_DOMAIN       — e.g. "yourspace.sip.signalwire.com"
+//   SIP_FORWARD_USERNAME     — e.g. "alex-mobile"
+//   SIP_FORWARD_DOMAIN       — e.g. "wedidit4you-bc852a90e7c6.sip.signalwire.com"
 //   SIGNALWIRE_PHONE_HOUSTON, SIGNALWIRE_PHONE_PHOENIX, etc. — the 5 numbers
-
-import "dotenv/config";
 
 const PROJECT = process.env.SIGNALWIRE_PROJECT_ID ?? "";
 const TOKEN = process.env.SIGNALWIRE_TOKEN ?? "";
@@ -212,3 +210,5 @@ main().catch((err) => {
   console.error("Setup failed:", err);
   process.exit(1);
 });
+
+export {};
