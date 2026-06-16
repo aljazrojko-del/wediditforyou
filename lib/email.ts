@@ -1,12 +1,18 @@
-// Resend wrapper — send a short delivery email containing a site link.
-// Used by /api/outreach/send-link as a fallback channel when SMS fails or
-// when the prospect prefers email.
+// SMTP sender — sends a short delivery email containing a site link.
+// Sends from info@wedidit4you.com directly via the mailbox's SMTP server,
+// no third-party transactional provider needed. Same mailbox the prospect
+// will see if they reply.
 //
-// Env:
-//   RESEND_API_KEY    — from resend.com dashboard
-//   RESEND_FROM_EMAIL — e.g. "Alex <alex@wedidit4you.com>" (domain must be verified)
+// Env (in .env.local + Vercel production):
+//   SMTP_HOST       — e.g. smtp.zoho.com / smtp.gmail.com / smtp.office365.com
+//   SMTP_PORT       — usually 465 (SSL) or 587 (STARTTLS)
+//   SMTP_SECURE     — "true" for port 465, "false" for 587 (default: based on port)
+//   SMTP_USER       — full mailbox address, e.g. info@wedidit4you.com
+//   SMTP_PASSWORD   — mailbox password OR app-specific password (NEVER paste in chat)
+//   SMTP_FROM_NAME  — display name, e.g. "Alex from WediditForYou"
+//   SMTP_FROM_EMAIL — sender address (usually same as SMTP_USER)
 
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 
 export type EmailResult =
   | { ok: true; id: string }
@@ -20,6 +26,8 @@ export type SendLinkEmailArgs = {
   body?: string;
   /** Optional subject. Default: "Your wediditforyou preview site". */
   subject?: string;
+  /** Optional reply-to override. */
+  replyTo?: string;
 };
 
 const DEFAULT_SUBJECT = "Your wediditforyou preview site";
@@ -39,27 +47,61 @@ If you don't want it, no hard feelings — keep the draft, no charge.
 wediditforyou`;
 }
 
-export async function sendLinkEmail(args: SendLinkEmailArgs): Promise<EmailResult> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
-  if (!apiKey) return { ok: false, error: "RESEND_API_KEY not set" };
-  if (!from) return { ok: false, error: "RESEND_FROM_EMAIL not set" };
+// Cache the transporter across warm invocations
+let cachedTransporter: Transporter | null = null;
 
-  const resend = new Resend(apiKey);
+function getTransporter(): Transporter | null {
+  if (cachedTransporter) return cachedTransporter;
+
+  const host = process.env.SMTP_HOST;
+  const portStr = process.env.SMTP_PORT;
+  const user = process.env.SMTP_USER;
+  const password = process.env.SMTP_PASSWORD;
+  if (!host || !portStr || !user || !password) return null;
+
+  const port = Number(portStr);
+  const secure =
+    process.env.SMTP_SECURE === "true" ||
+    (process.env.SMTP_SECURE !== "false" && port === 465);
+
+  cachedTransporter = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass: password },
+  });
+  return cachedTransporter;
+}
+
+function buildFrom(): string {
+  const name = process.env.SMTP_FROM_NAME ?? "Alex";
+  const email = process.env.SMTP_FROM_EMAIL ?? process.env.SMTP_USER ?? "";
+  // RFC 5322 friendly display name
+  return `"${name.replace(/"/g, "")}" <${email}>`;
+}
+
+export async function sendLinkEmail(args: SendLinkEmailArgs): Promise<EmailResult> {
+  const transporter = getTransporter();
+  if (!transporter) {
+    return {
+      ok: false,
+      error: "SMTP not configured (need SMTP_HOST/PORT/USER/PASSWORD in env)",
+    };
+  }
+
+  const from = buildFrom();
   const subject = args.subject ?? DEFAULT_SUBJECT;
   const text = args.body ?? defaultBody(args.firstName, args.siteUrl);
 
   try {
-    const result = await resend.emails.send({
+    const info = await transporter.sendMail({
       from,
       to: args.to,
       subject,
       text,
+      replyTo: args.replyTo ?? process.env.SMTP_FROM_EMAIL ?? process.env.SMTP_USER,
     });
-    if (result.error) {
-      return { ok: false, error: `${result.error.name}: ${result.error.message}` };
-    }
-    return { ok: true, id: result.data?.id ?? "unknown" };
+    return { ok: true, id: info.messageId };
   } catch (err) {
     return { ok: false, error: (err as Error).message };
   }
