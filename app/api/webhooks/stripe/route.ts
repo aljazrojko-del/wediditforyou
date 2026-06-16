@@ -25,6 +25,7 @@ import {
   packageFromAmount,
 } from "@/lib/stripe";
 import { sendWelcomeSms } from "@/lib/welcome";
+import { sendWelcomeEmail } from "@/lib/welcome-email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -147,6 +148,21 @@ async function handleCheckoutCompleted(
       }
     } catch (e) {
       console.error("[stripe-webhook] welcome sms crashed:", (e as Error).message);
+    }
+
+    // Welcome EMAIL — same fire-and-forget pattern as the SMS above, gated by
+    // its own welcome_email_sent_at column so SMS and email can succeed
+    // independently. Customer gets both channels for confirmation redundancy.
+    try {
+      const welcomeEmailRes = await sendWelcomeEmail(lead.id, supabase);
+      if (!welcomeEmailRes.ok) {
+        console.warn(
+          "[stripe-webhook] welcome email",
+          welcomeEmailRes.skipped ?? welcomeEmailRes.error,
+        );
+      }
+    } catch (e) {
+      console.error("[stripe-webhook] welcome email crashed:", (e as Error).message);
     }
   }
 
