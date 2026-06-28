@@ -4,11 +4,10 @@
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SignalWireClient } from "./signalwire-client";
+import { SITE_ORIGIN } from "./site";
 
 const NOT_A_NAME =
   /^(the|best|premier|elite|royal|gold|silver|new|old|first|big|little|mobile|local|bayou|city|greenline|riverside|sunrise|sunset|north|south|east|west|main|grand|pro|professional|auto|limousine|express|premium|quick|fast|reliable|trustworthy|guaranteed|certified|texas|houston|dallas|austin|chicago|atlanta|phoenix|lubbock|miami|seattle|denver|orlando|tampa|nashville|raleigh|brooklyn|manhattan|midtown|downtown|america|american)$/i;
-
-const SITE_BASE = process.env.SITE_ORIGIN ?? "https://wedidit4you.com";
 
 export type LeadForOutreach = {
   id: string; // uuid
@@ -110,9 +109,13 @@ export async function placeCallToLead(
   const from = client.pickFromNumber(lead.city);
   if (!from) return { ok: false, error: "No SignalWire from-number for city" };
 
-  const twimlUrl = `${SITE_BASE}/api/twiml/call/${lead.slug}`;
+  const twimlUrl = `${SITE_ORIGIN}/api/twiml/call/${lead.slug}`;
+  // Tell SignalWire to POST live call-status events (ringing -> completed) to
+  // our webhook, tagged with this lead so the dashboard updates in real time.
+  // Receiver: app/api/webhooks/signalwire/call-status/route.ts
+  const statusCallback = `${SITE_ORIGIN}/api/webhooks/signalwire/call-status?lead_id=${encodeURIComponent(lead.id)}`;
 
-  const res = await client.makeCall({ from, to, twimlUrl });
+  const res = await client.makeCall({ from, to, twimlUrl, statusCallback });
   if (!res.ok) return { ok: false, error: res.error };
 
   await supabase
