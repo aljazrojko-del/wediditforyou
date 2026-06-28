@@ -16,6 +16,7 @@
 
 import crypto from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import { SITE_ORIGIN } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,11 @@ function emptyTwiml(): Response {
 // (API Credentials), NOT the REST API token. Configure it as SIGNALWIRE_SIGNING_KEY.
 // If it is unset, we fail OPEN (allow, but warn) so the endpoint keeps working
 // until the key is provisioned; set the env var to enforce rejection.
-function verifySignature(req: Request, fields: Record<string, string>): boolean {
+function verifySignature(
+  req: Request,
+  url: URL,
+  fields: Record<string, string>,
+): boolean {
   const signingKey = process.env.SIGNALWIRE_SIGNING_KEY;
   if (!signingKey) {
     console.warn(
@@ -67,11 +72,9 @@ function verifySignature(req: Request, fields: Record<string, string>): boolean 
   }
 
   // Rebuild the exact public URL SignalWire signed. The caller sets the
-  // StatusCallback against this same origin, so reconstruct from it rather than
-  // trusting the proxied request host (Vercel rewrites Host internally).
-  const base = process.env.SITE_ORIGIN ?? "https://wedidit4you.com";
-  const reqUrl = new URL(req.url);
-  let data = base + reqUrl.pathname + reqUrl.search;
+  // StatusCallback against this same shared origin (lib/site.ts), so reconstruct
+  // from it rather than trusting the proxied request host (Vercel rewrites Host).
+  let data = SITE_ORIGIN + url.pathname + url.search;
   for (const k of Object.keys(fields).sort()) data += k + fields[k];
 
   const expected = crypto
@@ -92,6 +95,8 @@ async function handle(req: Request) {
     return emptyTwiml();
   }
 
+  const url = new URL(req.url);
+
   let fields: Record<string, string> = {};
   try {
     const text = await req.text();
@@ -101,7 +106,7 @@ async function handle(req: Request) {
   }
 
   // Reject forged requests before touching the database.
-  if (!verifySignature(req, fields)) {
+  if (!verifySignature(req, url, fields)) {
     console.error("[webhook/sw-call-status] invalid signature — rejecting");
     return new Response("invalid signature", { status: 403 });
   }
@@ -109,7 +114,7 @@ async function handle(req: Request) {
   const callSid = fields.CallSid ?? "";
   const rawStatus = (fields.CallStatus ?? "").toLowerCase();
   const status = VALID.has(rawStatus) ? rawStatus : null;
-  const leadId = new URL(req.url).searchParams.get("lead_id");
+  const leadId = url.searchParams.get("lead_id");
 
   console.log("[webhook/sw-call-status]", { callSid, status: rawStatus, leadId });
 
@@ -118,16 +123,38 @@ async function handle(req: Request) {
   const supabase = createClient(envUrl, key, { auth: { persistSession: false } });
   const patch: Record<string, unknown> = { call_status: status };
 
+  // Match by lead_id when present, else by call_sid. Capture error AND row count:
+  // supabase-js resolves (does NOT throw) on a DB error, and a no-match update
+  // succeeds with zero rows — both would otherwise pass silently and the
+  // dashboard would never reflect the status. Log both so failures are visible.
   try {
+    let result;
     if (leadId) {
       // Stamp the sid too so future status events can match by sid as well.
       if (callSid) patch.call_sid = callSid;
-      await supabase.from("leads").update(patch).eq("id", leadId);
+      result = await supabase
+        .from("leads")
+        .update(patch, { count: "exact" })
+        .eq("id", leadId);
     } else if (callSid) {
-      await supabase.from("leads").update(patch).eq("call_sid", callSid);
+      result = await supabase
+        .from("leads")
+        .update(patch, { count: "exact" })
+        .eq("call_sid", callSid);
+    } else {
+      console.warn("[webhook/sw-call-status] no lead_id or CallSid to match — status not persisted");
+      return emptyTwiml();
+    }
+
+    if (result.error) {
+      console.error("[webhook/sw-call-status] lead update failed:", result.error.message);
+    } else if (!result.count) {
+      console.warn(
+        `[webhook/sw-call-status] no lead matched (lead_id=${leadId ?? "-"}, call_sid=${callSid || "-"}) — status not persisted`,
+      );
     }
   } catch (e) {
-    console.error("[webhook/sw-call-status] lead update error:", (e as Error).message);
+    console.error("[webhook/sw-call-status] lead update threw:", (e as Error).message);
   }
 
   return emptyTwiml();
