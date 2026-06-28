@@ -111,8 +111,12 @@ export async function placeCallToLead(
   if (!from) return { ok: false, error: "No SignalWire from-number for city" };
 
   const twimlUrl = `${SITE_BASE}/api/twiml/call/${lead.slug}`;
+  // Tell SignalWire to POST live call-status events (ringing -> completed) to
+  // our webhook, tagged with this lead so the dashboard updates in real time.
+  // Receiver: app/api/webhooks/signalwire/call-status/route.ts
+  const statusCallback = `${SITE_BASE}/api/webhooks/signalwire/call-status?lead_id=${lead.id}`;
 
-  const res = await client.makeCall({ from, to, twimlUrl });
+  const res = await client.makeCall({ from, to, twimlUrl, statusCallback });
   if (!res.ok) return { ok: false, error: res.error };
 
   await supabase
