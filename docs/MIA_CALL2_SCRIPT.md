@@ -113,19 +113,38 @@ Probe only what they haven't covered:
 > that's over $2,600 of work. In Premium it's all $700. And that's the founders
 > rate we're running right now — it moves to $1,200 after this round."
 
+**Bonus — stack it on (Premium only) [Hormozi]:**
+> "And because you're coming in now, I'm throwing in my Customer Reactivation Kit,
+> free — done-for-you texts and emails so you can blast your existing customers
+> straight to your new booking page. That's how you get bookings in week one
+> instead of waiting on Google to catch up. It's a $300 add-on on its own — yours
+> at no charge with Premium."
+
 **Make Starter feel like the expensive choice [Hormozi decoy]:**
 > "Straight talk — most guys who take Starter call me a month later wanting the
 > Premium stuff anyway. By then it's a separate project, runs closer to $1,200.
 > The $250 today is the cheapest it will ever be."
 
+**Proof [Hormozi — the likelihood lever]:**
+> "{proof_line}"
+
+`{proof_line}` — drop in a TRUE result the moment you have one, e.g. "I set this
+up for a mobile mechanic over in {nearby_city} — he went from missing calls to
+booked a week out." **Never fabricate one.** Until you have a real result, use
+demonstration proof — it's already in their hand:
+> "Easiest way to show you it's real — it's live on your screen right now. Give me
+> one thing to change and watch me update it while we're talking."
+
 **Recommend, with authority [Cialdini]:**
 > "If it were my shop, I'd do Premium without thinking about it. The review
 > engine alone pays for the whole thing."
 
-**Risk reversal [Hormozi] — then stop talking:**
-> "And the easy part — you don't pay a cent until it's finished and you're happy
-> with it. I build it, you look it over, *then* you pay. Nothing on you if it's
-> not right."
+**Risk reversal + named guarantee [Hormozi] — then stop talking:**
+> "And I make it impossible to lose. Two things. One — you don't pay a cent until
+> it's finished and you're happy. I build it, you look it over, *then* you pay.
+> Two — the 30-Day Inquiry Guarantee: once it's live, if it doesn't bring you a
+> single customer inquiry in your first 30 days, I keep working it free until it
+> does. The only way this goes sideways for you is if it works."
 >
 > "So — want me to set you up with Premium and start your changes today?"
 
@@ -134,10 +153,10 @@ Probe only what they haven't covered:
 ## 6. Objections — tactical, crisp
 
 **"$250 more is a lot."**
-> "Fair. Quick math — if Premium pulls you *one* extra job a month, that's a
-> hundred-plus in your pocket. Most of my Premium clients see five to ten extra
-> calls in month one. You break even week one off a single job, and it compounds.
-> Worth it?"
+> "Fair. Quick math — Premium only has to pull you *one* extra job a month to pay
+> for itself for a whole year. One. And if it doesn't bring you an inquiry in 30
+> days, I keep working it free — so you're not betting on my word, you're betting
+> on a guarantee. Worth it?"
 
 **"Let me think about it."** [Voss label + reframe the risk away]
 > "Totally — sounds like you just want to be sure it's worth it. Here's the
@@ -237,6 +256,15 @@ Capture `outcome: not_closed`, `objection`, `follow_up_at`.
 - **Never quantify build effort** ("took me an hour"). "Live within 24 hours" is
   a *delivery* promise to them — that's fine. How long it took you is not their
   business.
+- **30-Day Inquiry Guarantee:** named result guarantee — no customer inquiry in
+  the first 30 days live → keep working it free until there is. CONFIRM exact
+  terms before going live (free-work vs refund; whether to cap at e.g. 60 days).
+  Aljaz decides.
+- **Proof:** never fabricate a testimonial or a stat. Use a TRUE client result
+  once you have one; until then use demonstration proof (edit the live site on
+  the call). Do not claim "5–10 extra calls" or any unprovable number.
+- **Bonus (Premium only):** Customer Reactivation Kit (done-for-you texts/emails
+  to their existing customers) — framed as a $300 add-on, free with Premium.
 - **Lead-Gen upsell:** niche-gated — tutors yes, groomers maybe, **mechanics
   never**. $2 per delivered lead, pay-per-result. Seed only, never hard-close on
   this call.
