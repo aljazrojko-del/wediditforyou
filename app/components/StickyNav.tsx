@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 export default function StickyNav() {
@@ -35,18 +36,20 @@ export default function StickyNav() {
           scrolled ? "py-3.5" : "py-5"
         }`}
       >
-        {/* Logo — flat color, the CTA carries the gradient */}
+        {/* Logo — uploaded brand mark from public/logo.png */}
         <a
           href="#top"
-          className="group flex items-center gap-2.5 text-[#1F1814]"
+          className="group flex items-center text-[#1F1814]"
+          aria-label="wediditforyou home"
         >
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#C2410C] text-[13px] font-bold text-white shadow-sm transition group-hover:scale-105">
-            W
-          </span>
-          <span className="font-mono text-sm tracking-tight">
-            wediditforyou
-            <span className="text-[#C2410C]">.</span>
-          </span>
+          <Image
+            src="/logo.png"
+            alt="We Did It For You"
+            width={1536}
+            height={1024}
+            priority
+            className="h-12 w-auto transition group-hover:scale-105 sm:h-14"
+          />
         </a>
 
         {/* Nav links with warmer hover */}

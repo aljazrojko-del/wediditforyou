@@ -437,7 +437,7 @@ export default function Home() {
                     "Listed on 5 directories (Yelp, BBB, Nextdoor, Bing, Yellow Pages)",
                     "Online booking with service menu + pricing",
                     "Auto-review collection — text customers after each job",
-                    "Monthly performance report — visits, calls, bookings",
+                    "Live Call & Booking Tracker — every visit, call & booking, in real time",
                     "90-day priority support (vs. 30 days for Starter)",
                   ].map((label) => (
                     <li
@@ -566,7 +566,7 @@ export default function Home() {
           </div>
 
           <div className="mt-10 border-t border-[#1F1814]/10 pt-6 text-xs text-[#1F1814]/45 sm:flex sm:items-center sm:justify-between">
-            <div>© 2026 wediditforyou. Built by Alex Rojko.</div>
+            <div>© 2026 wediditforyou. Built by Alex.</div>
             <div className="mt-2 sm:mt-0">
               Independent. No agency. No outsourcing.
             </div>

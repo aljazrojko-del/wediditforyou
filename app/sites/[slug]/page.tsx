@@ -9,6 +9,7 @@ import type {
 } from "../_templates/types";
 import { TEMPLATES, normalizeNiche } from "../_templates/registry";
 import { IMAGE_BANK } from "../_templates/images";
+import SiteTracker from "./SiteTracker";
 
 type LeadRow = {
   name: string;
@@ -98,5 +99,10 @@ export default async function SitePage(
   const data = await loadLead(slug);
   if (!data) notFound();
   const Template = TEMPLATES[data.niche];
-  return <Template data={data} />;
+  return (
+    <>
+      <Template data={data} />
+      <SiteTracker slug={data.slug} />
+    </>
+  );
 }
