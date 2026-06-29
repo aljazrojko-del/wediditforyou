@@ -46,6 +46,32 @@ async function loadLeadAndOnboarding(
   return { lead, onboarding: onboarding ?? null };
 }
 
+type Metrics = { visits: number; calls: number; bookings: number };
+
+// Last-30-day counts from site_events for this customer's live site.
+async function loadMetrics(leadId: string): Promise<Metrics | null> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  const supabase = createClient(url, key, { auth: { persistSession: false } });
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const countOf = async (type: string): Promise<number> => {
+    const { count } = await supabase
+      .from("site_events")
+      .select("id", { count: "exact", head: true })
+      .eq("lead_id", leadId)
+      .eq("type", type)
+      .gte("created_at", since);
+    return count ?? 0;
+  };
+  const [visits, calls, bookings] = await Promise.all([
+    countOf("visit"),
+    countOf("call_click"),
+    countOf("booking_click"),
+  ]);
+  return { visits, calls, bookings };
+}
+
 export default async function MySitePage(
   props: { params: Promise<{ token: string }> },
 ) {
@@ -53,6 +79,7 @@ export default async function MySitePage(
   const ctx = await loadLeadAndOnboarding(token);
   if (!ctx) notFound();
   const { lead, onboarding } = ctx;
+  const metrics = lead.tier === "premium" ? await loadMetrics(lead.id) : null;
 
   return (
     <main className="min-h-screen bg-[#FAF6F0] text-[#1F1814]">
@@ -74,6 +101,38 @@ export default async function MySitePage(
           >
             View live site ↗
           </a>
+        )}
+
+        {metrics && (
+          <div className="mt-12 rounded-3xl border border-[#1F1814]/10 bg-white p-7 sm:p-10">
+            <h2 className="text-xl font-semibold">Your numbers</h2>
+            <p className="mt-2 text-sm text-[#1F1814]/65">
+              Live from your site — last 30 days. Real proof it&apos;s working.
+            </p>
+            <div className="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
+              {[
+                { label: "Visits", value: metrics.visits },
+                { label: "Calls", value: metrics.calls },
+                { label: "Bookings", value: metrics.bookings },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl bg-[#FAF6F0] p-5 text-center"
+                >
+                  <div className="text-3xl font-semibold text-[#C2410C]">
+                    {s.value}
+                  </div>
+                  <div className="mt-1 text-xs font-medium uppercase tracking-wide text-[#1F1814]/55">
+                    {s.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs text-[#1F1814]/45">
+              &quot;Calls&quot; and &quot;Bookings&quot; count taps on your phone
+              number and booking button — updated live as customers use your site.
+            </p>
+          </div>
         )}
 
         {onboarding && (
