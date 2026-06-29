@@ -114,11 +114,11 @@ Probe only what they haven't covered:
 > rate we're running right now — it moves to $1,200 after this round."
 
 **Bonus — stack it on (Premium only) [Hormozi]:**
-> "And because you're coming in now, I'm throwing in my Customer Reactivation Kit,
-> free — done-for-you texts and emails so you can blast your existing customers
-> straight to your new booking page. That's how you get bookings in week one
-> instead of waiting on Google to catch up. It's a $300 add-on on its own — yours
-> at no charge with Premium."
+> "And two things on the house because you're coming in now. One — a custom logo,
+> built for you. Makes you look like a real brand, not just a name and a number —
+> that's a $200 job on its own. Two — your Call & Booking Tracker: you'll see
+> exactly how many calls and bookings the site brings you, so you *know* it's
+> working instead of guessing. Both free with Premium."
 
 **Make Starter feel like the expensive choice [Hormozi decoy]:**
 > "Straight talk — most guys who take Starter call me a month later wanting the
@@ -263,8 +263,9 @@ Capture `outcome: not_closed`, `objection`, `follow_up_at`.
 - **Proof:** never fabricate a testimonial or a stat. Use a TRUE client result
   once you have one; until then use demonstration proof (edit the live site on
   the call). Do not claim "5–10 extra calls" or any unprovable number.
-- **Bonus (Premium only):** Customer Reactivation Kit (done-for-you texts/emails
-  to their existing customers) — framed as a $300 add-on, free with Premium.
+- **Bonuses (Premium only):** (1) Free custom logo (~$200 value, auto-generated).
+  (2) Call & Booking Tracker — live count of calls/bookings the site drives (also
+  backs the 30-day guarantee). Both free with Premium.
 - **Lead-Gen upsell:** niche-gated — tutors yes, groomers maybe, **mechanics
   never**. $2 per delivered lead, pay-per-result. Seed only, never hard-close on
   this call.
