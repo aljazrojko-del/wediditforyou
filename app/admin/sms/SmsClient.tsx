@@ -20,6 +20,26 @@ type ThreadData = {
   messages: ThreadMessage[];
 };
 
+type Sender = {
+  city: "dallas" | "phoenix" | "nashville" | "chicago" | "houston";
+  number: string | null;
+  approved: boolean;
+};
+
+const CITY_LABELS: Record<Sender["city"], string> = {
+  dallas: "Dallas",
+  phoenix: "Phoenix",
+  nashville: "Nashville",
+  chicago: "Chicago",
+  houston: "Houston",
+};
+
+function areaCode(num: string | null): string {
+  if (!num) return "";
+  const m = num.match(/\+1(\d{3})/);
+  return m ? `+1 ${m[1]}` : num;
+}
+
 function fmtTime(iso: string): string {
   try {
     const d = new Date(iso);
@@ -42,7 +62,42 @@ export default function SmsClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [senders, setSenders] = useState<Sender[]>([]);
+  const [fromCity, setFromCity] = useState<Sender["city"]>("dallas");
   const threadEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Load the list of regional numbers once so the dropdown reflects what's
+  // actually configured + approved server-side.
+  useEffect(() => {
+    fetch("/api/admin/sms-quick/senders")
+      .then((r) => r.json())
+      .then((d: { senders?: Sender[] }) => {
+        if (d.senders) {
+          setSenders(d.senders);
+          // Restore last choice if it's still approved.
+          try {
+            const last = localStorage.getItem("smsFromCity") as Sender["city"] | null;
+            if (last && d.senders.find((s) => s.city === last && s.approved)) {
+              setFromCity(last);
+            }
+          } catch {
+            /* localStorage might be unavailable */
+          }
+        }
+      })
+      .catch(() => {
+        /* dropdown stays empty — send falls back to server default */
+      });
+  }, []);
+
+  // Persist sender choice.
+  useEffect(() => {
+    try {
+      localStorage.setItem("smsFromCity", fromCity);
+    } catch {
+      /* private browsing etc */
+    }
+  }, [fromCity]);
 
   const loadThread = useCallback(async (p: string) => {
     if (!p.trim()) return;
@@ -91,7 +146,7 @@ export default function SmsClient() {
       const res = await fetch(`/api/admin/sms-quick/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to: phone, body }),
+        body: JSON.stringify({ to: phone, body, fromCity }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string; sid?: string };
       if (!res.ok || !data.ok) {
@@ -191,9 +246,28 @@ export default function SmsClient() {
         onSubmit={handleSend}
         className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 flex flex-col gap-2"
       >
-        <label className="block text-xs uppercase tracking-wider text-zinc-500">
-          Message
-        </label>
+        <div className="flex items-center justify-between gap-2">
+          <label className="block text-xs uppercase tracking-wider text-zinc-500">
+            Message
+          </label>
+          {senders.length > 0 && (
+            <label className="flex items-center gap-2 text-xs">
+              <span className="uppercase tracking-wider text-zinc-500">From</span>
+              <select
+                value={fromCity}
+                onChange={(e) => setFromCity(e.target.value as Sender["city"])}
+                className="bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs focus:outline-none focus:border-zinc-600"
+              >
+                {senders.map((s) => (
+                  <option key={s.city} value={s.city} disabled={!s.approved || !s.number}>
+                    {CITY_LABELS[s.city]} {areaCode(s.number)}
+                    {!s.approved ? " (not linked to A2P)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+        </div>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -204,7 +278,8 @@ export default function SmsClient() {
         />
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-zinc-500">
-            {body.length}/1600 · sends from Dallas (+1 469)
+            {body.length}/1600 · sends from {CITY_LABELS[fromCity]}{" "}
+            {areaCode(senders.find((s) => s.city === fromCity)?.number ?? null)}
           </span>
           <button
             type="submit"

@@ -13,9 +13,9 @@ export async function POST(req: Request) {
   const unauth = await requireAdmin();
   if (unauth) return unauth;
 
-  let payload: { to?: string; body?: string };
+  let payload: { to?: string; body?: string; fromCity?: string };
   try {
-    payload = (await req.json()) as { to?: string; body?: string };
+    payload = (await req.json()) as { to?: string; body?: string; fromCity?: string };
   } catch {
     return NextResponse.json({ error: "invalid JSON" }, { status: 400 });
   }
@@ -25,8 +25,21 @@ export async function POST(req: Request) {
   if (!to) return NextResponse.json({ error: "to is required" }, { status: 400 });
   if (!body) return NextResponse.json({ error: "body is required" }, { status: 400 });
 
+  // Whitelist on the server too — never trust the client's claim about
+  // which envelope From to use.
+  const ALLOWED = new Set(["dallas", "phoenix", "nashville", "chicago", "houston"]);
+  const fromCity =
+    payload.fromCity && ALLOWED.has(payload.fromCity)
+      ? (payload.fromCity as
+          | "dallas"
+          | "phoenix"
+          | "nashville"
+          | "chicago"
+          | "houston")
+      : null;
+
   const supabase = getServiceClient();
-  const res = await sendQuickSms(supabase, { to, body });
+  const res = await sendQuickSms(supabase, { to, body, fromCity });
   if (!res.ok) return NextResponse.json({ error: res.error }, { status: 400 });
   return NextResponse.json({ ok: true, sid: res.sid, from: res.from, to: res.to });
 }
