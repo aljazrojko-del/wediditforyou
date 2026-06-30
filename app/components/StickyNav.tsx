@@ -45,10 +45,10 @@ export default function StickyNav() {
           <Image
             src="/logo.png"
             alt="We Did It For You"
-            width={1536}
-            height={1024}
+            width={961}
+            height={501}
             priority
-            className="h-16 w-auto transition group-hover:scale-105 sm:h-20"
+            className="h-20 w-auto transition group-hover:scale-105 sm:h-24"
           />
         </a>
 
