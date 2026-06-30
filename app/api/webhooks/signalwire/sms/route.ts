@@ -123,8 +123,9 @@ async function handle(req: Request) {
     : leadId
       ? `New SMS from ${from} (lead matched)`
       : `New SMS from ${from} (no lead match)`;
+  const replyUrl = `https://wedidit4you.com/admin/sms?phone=${encodeURIComponent(from)}`;
   void notifyTelegram(
-    `${header}\nTo: ${to}\n\n${body}\n\nReply: https://wedidit4you.com/admin/inbox`,
+    `${header}\nTo: ${to}\n\n${body}\n\nReply: ${replyUrl}`,
   );
 
   return emptyTwiml();

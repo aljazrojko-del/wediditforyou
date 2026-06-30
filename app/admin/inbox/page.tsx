@@ -100,8 +100,14 @@ export default async function InboxPage() {
                     <div className="text-xs text-zinc-500">{fmtTime(m.received_at)}</div>
                   </div>
                   <p className="text-zinc-100 whitespace-pre-wrap">{m.body ?? "(no body)"}</p>
-                  {lead?.slug && (
-                    <div className="mt-3 flex gap-3 text-xs">
+                  <div className="mt-3 flex gap-3 text-xs">
+                    <a
+                      href={`/admin/sms?phone=${encodeURIComponent(m.from_phone)}`}
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      reply →
+                    </a>
+                    {lead?.slug && (
                       <a
                         href={`https://sites.wedidit4you.com/${lead.slug}`}
                         target="_blank"
@@ -110,8 +116,8 @@ export default async function InboxPage() {
                       >
                         view their site ↗
                       </a>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </li>
               );
             })}
