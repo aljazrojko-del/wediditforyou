@@ -51,8 +51,14 @@ export class SignalWireClient {
   }
 
   /**
-   * Pick the right outbound number for a lead's city. Falls back to Houston
+   * Pick the right outbound number for a lead's city. Falls back to Dallas
    * if no city match. Returns null if no number is configured at all.
+   *
+   * Why Dallas as fallback (not Houston): Houston is NOT linked to the
+   * approved A2P 10DLC campaign in SignalWire as of 2026-06-30, so sends
+   * from Houston return "must send to a verified caller id". The other 4
+   * regional numbers (Dallas, Phoenix, Nashville, Chicago) all ARE linked.
+   * Flip back to Houston once it's attached to "Wedidit4you Capm1".
    */
   pickFromNumber(city: string | null | undefined): string | null {
     if (city) {
@@ -63,7 +69,11 @@ export class SignalWireClient {
         }
       }
     }
-    return process.env.SIGNALWIRE_PHONE_HOUSTON ?? null;
+    return (
+      process.env.SIGNALWIRE_PHONE_DALLAS ??
+      process.env.SIGNALWIRE_PHONE_HOUSTON ??
+      null
+    );
   }
 
   /**

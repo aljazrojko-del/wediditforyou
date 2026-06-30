@@ -204,7 +204,7 @@ export default function SmsClient() {
         />
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs text-zinc-500">
-            {body.length}/1600 · sends from Houston (+1 713)
+            {body.length}/1600 · sends from Dallas (+1 469)
           </span>
           <button
             type="submit"

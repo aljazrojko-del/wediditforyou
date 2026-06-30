@@ -6,7 +6,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { SignalWireClient } from "@/lib/signalwire-client";
 import { normalizeE164 } from "@/lib/outreach";
 
-const HOUSTON = process.env.SIGNALWIRE_PHONE_HOUSTON ?? "";
+// Houston is NOT linked to the approved A2P campaign yet, so it returns
+// "must send to a verified caller id" for every external destination.
+// Dallas IS linked — use it as the Quick SMS default until Houston is
+// attached to "Wedidit4you Capm1" in the SignalWire dashboard.
+const DEFAULT_FROM =
+  process.env.SIGNALWIRE_PHONE_DALLAS ??
+  process.env.SIGNALWIRE_PHONE_HOUSTON ??
+  "";
 
 export type ThreadMessage = {
   id: string;
@@ -42,7 +49,12 @@ export async function sendQuickSms(
   if (body.length > 1600) {
     return { ok: false, error: "Message too long (1600 char max)" };
   }
-  if (!HOUSTON) return { ok: false, error: "SIGNALWIRE_PHONE_HOUSTON env not set" };
+  if (!DEFAULT_FROM) {
+    return {
+      ok: false,
+      error: "No working SignalWire from-number configured (Dallas/Houston env both missing)",
+    };
+  }
 
   let client: SignalWireClient;
   try {
@@ -51,10 +63,9 @@ export async function sendQuickSms(
     return { ok: false, error: (e as Error).message };
   }
 
-  // Routing: until Dallas/Phoenix/Nashville/Chicago get A2P 10DLC approval,
-  // every outbound goes from Houston. That's fine for cross-state reach;
-  // response rates take a small hit but it's a working baseline.
-  const from = HOUSTON;
+  // Default outbound: Dallas (Houston not linked to campaign yet — see comment
+  // at DEFAULT_FROM above). Future iteration can area-code-route here too.
+  const from = DEFAULT_FROM;
 
   // Best-effort lead lookup by recipient's last 10 digits so the thread
   // can show the lead's name when the number matches.
