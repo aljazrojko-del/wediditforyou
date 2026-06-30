@@ -48,7 +48,7 @@ export default function StickyNav() {
             width={961}
             height={501}
             priority
-            className="h-20 w-auto transition group-hover:scale-105 sm:h-24"
+            className="h-[72px] w-auto transition group-hover:scale-105 sm:h-[86px]"
           />
         </a>
 
