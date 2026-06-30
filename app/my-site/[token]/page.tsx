@@ -6,11 +6,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import ChangeRequestForm from "./ChangeRequestForm";
 import DomainForm from "./DomainForm";
-import LogoSection from "./LogoSection";
 
 export const dynamic = "force-dynamic";
-
-type LogoOption = { style: string; url: string };
 
 type LeadView = {
   id: string;
@@ -20,8 +17,6 @@ type LeadView = {
   site_url: string | null;
   payment_status: string | null;
   tier: string | null;
-  logo_options: LogoOption[] | null;
-  logo_url: string | null;
 };
 
 type OnboardingView = {
@@ -39,7 +34,7 @@ async function loadLeadAndOnboarding(
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { data: lead } = await supabase
     .from("leads")
-    .select("id, name, slug, city, site_url, payment_status, tier, logo_options, logo_url")
+    .select("id, name, slug, city, site_url, payment_status, tier")
     .eq("customer_admin_token", token)
     .maybeSingle<LeadView>();
   if (!lead) return null;
@@ -151,19 +146,6 @@ export default async function MySitePage(
               <DomainForm
                 token={token}
                 existingDomain={onboarding.domain_registered}
-              />
-            </div>
-          </div>
-        )}
-
-        {lead.tier === "premium" && (
-          <div className="mt-12 rounded-3xl border border-[#1F1814]/10 bg-white p-7 sm:p-10">
-            <h2 className="text-xl font-semibold">Your logo</h2>
-            <div className="mt-5">
-              <LogoSection
-                token={token}
-                initialLogos={lead.logo_options ?? []}
-                initialSelected={lead.logo_url}
               />
             </div>
           </div>
