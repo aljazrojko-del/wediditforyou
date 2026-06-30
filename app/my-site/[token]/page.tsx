@@ -6,6 +6,20 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import ChangeRequestForm from "./ChangeRequestForm";
 import DomainForm from "./DomainForm";
+import StatusPanel from "./StatusPanel";
+
+type Stage =
+  | "awaiting_domain"
+  | "domain_registered"
+  | "site_deployed"
+  | "awaiting_approval"
+  | "approved"
+  | "in_30_day_window"
+  | "refund_pending"
+  | "refunded"
+  | "closed_won"
+  | "deploy_failed"
+  | "ghosted";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +37,8 @@ type OnboardingView = {
   domain_requested: string | null;
   domain_registered: string | null;
   stage: string;
+  customer_approved: boolean;
+  thirty_day_deadline: string | null;
 };
 
 async function loadLeadAndOnboarding(
@@ -40,7 +56,9 @@ async function loadLeadAndOnboarding(
   if (!lead) return null;
   const { data: onboarding } = await supabase
     .from("onboarding_state")
-    .select("domain_requested, domain_registered, stage")
+    .select(
+      "domain_requested, domain_registered, stage, customer_approved, thirty_day_deadline",
+    )
     .eq("lead_id", lead.id)
     .maybeSingle<OnboardingView>();
   return { lead, onboarding: onboarding ?? null };
@@ -101,6 +119,16 @@ export default async function MySitePage(
           >
             View live site ↗
           </a>
+        )}
+
+        {onboarding && (
+          <StatusPanel
+            token={token}
+            stage={onboarding.stage as Stage}
+            domainRegistered={onboarding.domain_registered}
+            thirtyDayDeadline={onboarding.thirty_day_deadline}
+            customerApproved={onboarding.customer_approved}
+          />
         )}
 
         {metrics && (
