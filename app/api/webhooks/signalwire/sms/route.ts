@@ -8,6 +8,7 @@
 // are composed manually from the admin Inbox or a future agent flow).
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { notifyTelegram } from "@/lib/telegram";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -93,15 +94,17 @@ async function handle(req: Request) {
     console.error("[webhook/sw-sms] insert error:", (e as Error).message);
   }
 
+  let leadName: string | null = null;
   if (leadId) {
     try {
       // Bump inbound_count and stamp last_inbound_at via two-step (no RPC).
       const { data: cur } = await supabase
         .from("leads")
-        .select("inbound_count")
+        .select("inbound_count, name")
         .eq("id", leadId)
-        .maybeSingle<{ inbound_count: number }>();
+        .maybeSingle<{ inbound_count: number; name: string | null }>();
       const next = (cur?.inbound_count ?? 0) + 1;
+      leadName = cur?.name ?? null;
       await supabase
         .from("leads")
         .update({
@@ -114,6 +117,15 @@ async function handle(req: Request) {
       console.error("[webhook/sw-sms] lead update error:", (e as Error).message);
     }
   }
+
+  const header = leadName
+    ? `New SMS from ${leadName} (${from})`
+    : leadId
+      ? `New SMS from ${from} (lead matched)`
+      : `New SMS from ${from} (no lead match)`;
+  void notifyTelegram(
+    `${header}\nTo: ${to}\n\n${body}\n\nReply: https://wedidit4you.com/admin/inbox`,
+  );
 
   return emptyTwiml();
 }
