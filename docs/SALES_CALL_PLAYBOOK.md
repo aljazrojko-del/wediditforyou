@@ -141,6 +141,63 @@ This is "no" in a polite sweater. Try once:
 
 If they push back → take the email, send the nurture sequence (§7). Don't fight it.
 
+### Path H — Gatekeeper picks up ("This is [assistant], how can I help?")
+
+Common for tutors and any owner successful enough to have someone screening. Don't try to trick the gatekeeper — they hate that and it burns you with the owner too. Be upfront, brief, and route the link to a place the owner will actually see it.
+
+#### Step 1 — Name-check → honest cold-call admission
+
+> "Hey, is [owner] around?"
+
+Gatekeeper says no or "who's calling?" → don't dodge, admit it:
+
+> "[Gatekeeper first name] — Alex here. I'll be upfront, this is a cold call. Real quick reason though: I saw [owner]'s Google reviews, noticed they don't have a website, and I went ahead and built a preview off their public info. Free to look at, no pitch. Is [owner] around, or is there a better time?"
+
+The honesty defuses the gatekeeper's reflex to shield. "Cold call" + "free preview" + "no pitch" in one breath = they usually pass you or offer a callback slot.
+
+#### Step 2 — If they ask "what have you done exactly?"
+
+**Slow down. One idea per sentence.** Gatekeepers repeat what they heard to the owner, so if you talk fast they'll mangle it and the owner gets a broken message. Say it like this:
+
+> "Yeah — I made [owner] a website. Free. Used their info off their Google page. If they like it, they keep it. If not, no big deal, no charge. That's what I'm calling about."
+
+#### Step 3 — Get the link where the owner will see it
+
+Two acceptable routes. Read the gatekeeper's willingness and offer both:
+
+> "Want me to text the link to [owner]'s cell direct, or send it to your phone and you pass it along? Whatever's easier."
+
+**Prefer owner's cell** — link + Google review stat + $450 founding hook lands harder direct-to-owner. But don't insist. Alienating the gatekeeper is a permanent block.
+
+#### Step 4 — Handle "email us at info@…"
+
+If they push you to email (especially to a generic address like `info@` or `hello@`), that's a soft brush-off. Try once:
+
+> "Sure, I can — but heads up, whatever I email is just a link to the site I already built. Text works better because it opens on their phone in one tap. What's [owner]'s cell?"
+
+If they still push email → take it, send the T+0 SMS-style message (§7) in email form instead. Don't fight it further.
+
+#### Step 5 — If they offer YOUR OWN domain by mistake
+
+Real thing that happens — gatekeeper hears "wedidit4you" during your call and says "you can email us at info@wedidit4you.com". That's your own address. Catch it gently and re-offer:
+
+> "Ha — [gatekeeper name], that's actually MY email. Wedidit4you is my company. What I meant was, give me a cell number — yours or [owner]'s — I text the link, [owner] opens it in 30 seconds when they have time. Or should I try [owner] tomorrow morning?"
+
+Zero shame in their mix-up — laughing it off + re-offering the same two paths keeps the vibe warm.
+
+#### Step 6 — If they take the message and hang up
+
+Get the callback expectation nailed BEFORE they hang up:
+
+> "One thing before you go — is there a time [owner] usually has a minute? Between jobs, morning coffee, end of day? I'll dial then instead of guessing."
+
+Then callback at that time. If they refused to give a time and just hung up → move on, don't burn the number with a second attempt today. Log as **gatekeeper_soft** and retry in 3-5 days at a different hour of the day.
+
+**Rules:**
+- Never pretend to be the owner's friend/existing customer to a gatekeeper. If found out, you're blacklisted forever.
+- Never leave a voicemail with the gatekeeper for the owner — the message will be truncated. Send the SMS to the owner directly (or ask the gatekeeper to forward it).
+- If the gatekeeper is the owner's spouse or business partner, they may be a decision-maker too. If they engage with the value ("that sounds interesting"), pitch them like you'd pitch the owner.
+
 ---
 
 ## 4. Discovery questions (use on the demo book call, not the opener)
@@ -308,6 +365,8 @@ LIMIT:   5 sites a week. Founding spots remaining: check `leads WHERE payment_st
 NEXT:    Stripe link → site live tonight on their domain.
 SILENCE: After the close question, count to 7 in your head. SHUT UP.
 AI:      Check lead.slug — NULL = A2 future-tense, NOT NULL = A1 present-tense.
+GATE:    Gatekeeper picks up? Honest cold-call + one-sentence value + ask
+         for owner's cell. Never fake being a customer.
 ```
 
 — Alex
