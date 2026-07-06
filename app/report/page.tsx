@@ -315,7 +315,18 @@ export default async function ReportPage() {
 
           <h3 className="warn">Blocking (needs Aljaz)</h3>
           <ul>
-            <li><span className="pass">✅ CAN-SPAM postal address <strong>sent to Luka 2026-07-06</strong></span> — Slovenia business address (legally valid in US). Waiting on him to update the GHL custom value <code>Email Footer</code>.</li>
+            <li>
+              <span className="pass">✅ CAN-SPAM postal address <strong>sent to Luka 2026-07-06</strong></span>{" "}
+              — Slovenia entity + d/b/a Wedidit4you (legally valid in US, includes explicit trading-name disclosure). Waiting on him to update the GHL custom value <code>Email Footer</code> to the block below:
+              <pre style={{ background: "var(--card)", padding: 12, borderRadius: 8, fontSize: 13, marginTop: 8, whiteSpace: "pre-wrap" }}>
+{`Spletna prodaja, Zvonko Zecevic s.p. (d/b/a Wedidit4you)
+Vurberk 99
+2241 Spodnji Duplek
+Slovenia
+
+Wedidit4you is a trading name of Spletna prodaja, Zvonko Zecevic s.p.`}
+              </pre>
+            </li>
             <li><strong>Explicit fresh dialing GO to Luka</strong> once his battery is done. Standing rule — Mia doesn&apos;t dial without it.</li>
           </ul>
 
