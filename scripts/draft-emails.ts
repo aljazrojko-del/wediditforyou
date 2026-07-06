@@ -14,7 +14,8 @@ import { makeClient } from "./db";
 const SPOTS_TAKEN = 2;
 const SPOTS_TOTAL = 10;
 
-// Polite cold-email template (matches scripts/outreach-templates.md #1).
+// Polite cold-email template. Canonical copy source is now
+// marketing-system/ghl-campaign/produce/cold-email.md (agency handover PR #11).
 const TEMPLATE = `Hello {first_name},
 
 We came across your business and noticed you don't have a website yet — would you like one?
