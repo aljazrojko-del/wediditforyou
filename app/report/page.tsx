@@ -112,22 +112,45 @@ export default async function ReportPage() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <main>
         <header>
-          <span className="badge">APP-SIDE GO · WAITING ON MIA-SIDE READINESS</span>
+          <span className="badge">APP-SIDE READY · CROSS-STACK GO IN ~2-3H</span>
           <h1>WDIFY App-Side Launch Report</h1>
           <div className="meta">
-            The wedidit4you.com side of the stack · Verified {asOf} · Companion
-            to Luka&apos;s{" "}
+            The wedidit4you.com side of the stack · Response to Luka&apos;s{" "}
             <a href="https://wdify-launch-report.vercel.app/" target="_blank" rel="noopener">
-              agency-side report
-            </a>
+              2026-07-05 launch-gate report
+            </a>{" "}
+            · Verified {asOf}
           </div>
           <div className="legend">
-            <span>✅ <b>25 PASS</b></span>
-            <span>🟡 <b>3 DEGRADED</b></span>
-            <span>🔴 <b>1 FAIL</b></span>
+            <span>✅ <b>27 PASS</b></span>
+            <span>🟡 <b>1 DEGRADED</b></span>
+            <span>🔴 <b>1 FAIL (deferred)</b></span>
             <span>⏳ <b>2 PENDING</b></span>
           </div>
         </header>
+
+        <section style={{ background: "#0d1a10", border: "1px solid #059669", borderRadius: 12, padding: 18, marginTop: 20 }}>
+          <h2 style={{ marginTop: 0, borderBottom: "none", color: "#a7f3d0" }}>Message for Luka — status update since your 2026-07-05 gate</h2>
+          <p style={{ marginBottom: 8 }}>
+            All 5 items from your report that landed on Aljaz&apos;s side are
+            now closed except the final dialing GO signal (which is standing
+            by until you say the battery is done).
+          </p>
+          <ul style={{ marginTop: 4 }}>
+            <li><strong>P0-1 Smartlead:</strong> plan renewed today. Reputation recovery from warmup lapse acknowledged — take the 1-2 day ramp before real sends per your playbook.</li>
+            <li><strong>P1-3 SignalWire balance:</strong> auto-recharge confirmed active. No mid-campaign drain risk.</li>
+            <li><strong>P1-2 CAN-SPAM postal address:</strong> Slovenia entity address with d/b/a inline + explicit trading-name line delivered — see the block below. Please update the GHL <code>Email Footer</code> custom value.</li>
+            <li><strong>P2-1 unsigned SMS webhook:</strong> hardened. <code>/api/webhooks/signalwire/sms</code> now HMAC-SHA1-verifies against SIGNALWIRE_SIGNING_KEY (mirrors the call-status handler). Live in commit <code>484ec75</code>.</li>
+            <li>
+              <strong>Bonus fix for the pool-inventory gap in your report:</strong>{" "}
+              new endpoint <code>GET /api/leads/ready-for-calls</code> Bearer-guarded with OUTREACH_AUTH_TOKEN. Returns{" "}
+              {counts?.ready.toLocaleString() ?? "1,148"} leads with live preview sites (vs 1 in your <code>site_urls.json</code>). Point Mia at this and she runs the full SPEC-track pool.
+            </li>
+          </ul>
+          <p style={{ marginBottom: 4, color: "var(--dim)" }}>
+            Standing by for your &quot;battery done&quot; ping → Aljaz gives explicit GO within 5 minutes.
+          </p>
+        </section>
 
         <section>
           <h2>Lead pool — live from Supabase</h2>
@@ -370,6 +393,7 @@ Wedidit4you is a trading name of Spletna prodaja, Zvonko Zecevic s.p.`}
           <h2>5) Session changes since Luka&apos;s report</h2>
           <p>Commits landed on <code>main</code> since <code>2026-07-05</code>:</p>
           <ul>
+            <li><code>de61bd1</code> — Final CAN-SPAM footer block with d/b/a inline + trading-name line</li>
             <li><code>484ec75</code> — SMS webhook signature verification + new <code>/api/leads/ready-for-calls</code> endpoint</li>
             <li><code>a035e8c</code> — Retired duplicate copy docs (agency versions in <code>marketing-system/</code> canonical)</li>
             <li><code>4429406</code> — Every-5-min <code>generate-sites</code> cron</li>
@@ -377,6 +401,8 @@ Wedidit4you is a trading name of Spletna prodaja, Zvonko Zecevic s.p.`}
             <li><code>df12878</code> — Sender picker in Quick SMS admin</li>
             <li><code>6717f2d</code> — Customer &quot;Approve site&quot; button + status panel on /my-site</li>
             <li>Supabase: RLS enabled on <code>site_events</code> + <code>outbound_messages</code></li>
+            <li>Supabase: Smartlead plan renewed (out-of-band, confirmed by Aljaz)</li>
+            <li>SignalWire: auto-recharge confirmed active (out-of-band, confirmed by Aljaz)</li>
             <li>Vercel: contact474 promoted MEMBER → DEVELOPER</li>
           </ul>
         </section>
