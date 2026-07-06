@@ -7,12 +7,53 @@
 // We respond with empty <Response/> TwiML (no auto-reply at this layer; replies
 // are composed manually from the admin Inbox or a future agent flow).
 
+import crypto from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { notifyTelegram } from "@/lib/telegram";
+import { SITE_ORIGIN } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
+
+// Same signature check as /api/webhooks/signalwire/call-status. Twilio-
+// compatible HMAC-SHA1: signed string = full public URL + each sorted
+// (key,value) concatenated, HMAC-SHA1 with SIGNALWIRE_SIGNING_KEY, base64,
+// compared constant-time against x-signalwire-signature header.
+//
+// If SIGNALWIRE_SIGNING_KEY is unset we fail OPEN with a warn — same
+// posture as the call-status route so this can't break a deploy while
+// the key is being provisioned. In prod the key IS set, so real traffic
+// is verified.
+function verifySignature(
+  req: Request,
+  url: URL,
+  fields: Record<string, string>,
+): boolean {
+  const signingKey = process.env.SIGNALWIRE_SIGNING_KEY;
+  if (!signingKey) {
+    console.warn(
+      "[webhook/sw-sms] SIGNALWIRE_SIGNING_KEY not set — signature check skipped",
+    );
+    return true;
+  }
+  const sig =
+    req.headers.get("x-signalwire-signature") ??
+    req.headers.get("x-twilio-signature");
+  if (!sig) {
+    console.error("[webhook/sw-sms] missing signature header");
+    return false;
+  }
+  let data = SITE_ORIGIN + url.pathname + url.search;
+  for (const k of Object.keys(fields).sort()) data += k + fields[k];
+  const expected = crypto
+    .createHmac("sha1", signingKey)
+    .update(Buffer.from(data, "utf-8"))
+    .digest("base64");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(sig);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
 function emptyTwiml(): Response {
   return new Response('<?xml version="1.0" encoding="UTF-8"?>\n<Response/>', {
@@ -49,15 +90,16 @@ async function findLeadIdByPhone(
 }
 
 async function handle(req: Request) {
-  const url = process.env.SUPABASE_URL;
+  const supaUrl = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!supaUrl || !key) {
     console.error("[webhook/sw-sms] missing supabase env");
     return emptyTwiml();
   }
-  const supabase = createClient(url, key, { auth: { persistSession: false } });
+  const supabase = createClient(supaUrl, key, { auth: { persistSession: false } });
 
   // Parse form-encoded body from SignalWire (matches Twilio convention).
+  const url = new URL(req.url);
   let fields: Record<string, string> = {};
   try {
     const text = await req.text();
@@ -65,6 +107,12 @@ async function handle(req: Request) {
     fields = Object.fromEntries(params.entries());
   } catch (e) {
     console.error("[webhook/sw-sms] body parse error:", (e as Error).message);
+  }
+
+  // Reject forged inbound before any DB write / Telegram push.
+  if (!verifySignature(req, url, fields)) {
+    console.error("[webhook/sw-sms] invalid signature — rejecting");
+    return new Response("invalid signature", { status: 403 });
   }
 
   const from = fields.From ?? "";
