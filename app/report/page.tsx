@@ -315,7 +315,7 @@ export default async function ReportPage() {
 
           <h3 className="warn">Blocking (needs Aljaz)</h3>
           <ul>
-            <li><strong>US postal address for CAN-SPAM email footer.</strong> The GHL custom value currently reads <code>PENDING-US-POSTAL-ADDRESS</code>. Legally required on outbound marketing email in the US.</li>
+            <li><span className="pass">✅ CAN-SPAM postal address <strong>sent to Luka 2026-07-06</strong></span> — Slovenia business address (legally valid in US). Waiting on him to update the GHL custom value <code>Email Footer</code>.</li>
             <li><strong>Explicit fresh dialing GO to Luka</strong> once his battery is done. Standing rule — Mia doesn&apos;t dial without it.</li>
           </ul>
 
