@@ -21,6 +21,9 @@ export default function AdminNav() {
           <Link href="/admin/sms" className="text-sm text-zinc-400 hover:text-zinc-100">
             SMS
           </Link>
+          <Link href="/admin/book" className="text-sm text-zinc-400 hover:text-zinc-100">
+            Book
+          </Link>
           <Link href="/admin/onboarding" className="text-sm text-zinc-400 hover:text-zinc-100">
             Onboarding
           </Link>
