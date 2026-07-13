@@ -415,7 +415,7 @@ StatusCallback = f"https://wedidit4you.com/api/webhooks/signalwire/call-status?l
             sentiment, and recording URL. This also solves Aljaz&apos;s
             &quot;I want to review transcripts&quot; request.
           </p>
-          <pre><code>{`POST https://wedidit4you.com/api/webhooks/brooke
+          <pre><code>{`POST https://wediditforyou-dashboard-lemon.vercel.app/api/webhooks/brooke
 X-API-Key: $BROOKE_WEBHOOK_SECRET
 Content-Type: application/json
 
