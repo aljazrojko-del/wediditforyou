@@ -18,6 +18,7 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { SignalWireClient } from "@/lib/signalwire-client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -221,11 +222,19 @@ export async function POST(req: Request) {
   }
   const apptId = appt.data.appointment?.id ?? appt.data.id;
 
-  // Optionally send the combined "link + appointment" SMS.
-  // Uses the existing /api/outreach/send-link internal path so all outbound
-  // gets logged consistently. Fire-and-forget so a comms failure doesn't
-  // undo the booking.
-  let smsResult: { ok: boolean; error?: string; sid?: string } | null = null;
+  // Optionally send the combined "link + appointment" SMS via SignalWire
+  // directly (bypasses /api/outreach/send-link which is shaped for cold
+  // outreach templates and requires a site_url on the lead, not an
+  // arbitrary custom body). Also logs to outbound_messages so admin/thread
+  // views can see it. Fire-and-forget: SMS failure never undoes the booking.
+  let smsResult: {
+    ok: boolean;
+    error?: string;
+    sid?: string;
+    from?: string;
+    to?: string;
+    body?: string;
+  } | null = null;
   if (body.send_combined_sms) {
     const timeStr = fmtCtDisplay(body.start_time_ct);
     const linkPart = siteUrl ? `Your site preview: ${siteUrl}\n\n` : "";
@@ -234,25 +243,47 @@ export async function POST(req: Request) {
       `Locked in for ${timeStr}. Reply STOP to opt out. Text me if the ` +
       `time doesn't work anymore. — Alex`;
 
-    const origin = new URL(req.url).origin;
-    try {
-      const smsRes = await fetch(`${origin}/api/outreach/send-link`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${expectedToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          phone,
-          message: msg,
-          channel: "sms",
-          source: "mia-booking",
-        }),
-      });
-      const smsJson = (await smsRes.json()) as { ok?: boolean; sid?: string; error?: string };
-      smsResult = { ok: smsRes.ok && (smsJson.ok ?? true), sid: smsJson.sid, error: smsJson.error };
-    } catch (e) {
-      smsResult = { ok: false, error: (e as Error).message };
+    // Prefer Dallas (10DLC-approved, campaign-linked) as the outbound number.
+    // Houston is still not attached to the campaign so we skip it.
+    const from =
+      process.env.SIGNALWIRE_PHONE_DALLAS ??
+      process.env.SIGNALWIRE_PHONE_PHOENIX ??
+      process.env.SIGNALWIRE_PHONE_NASHVILLE ??
+      process.env.SIGNALWIRE_PHONE_CHICAGO ??
+      null;
+
+    if (!from) {
+      smsResult = { ok: false, error: "no configured SignalWire from-number" };
+    } else {
+      try {
+        const client = new SignalWireClient();
+        const res = await client.sendSms({ from, to: phone, body: msg });
+        smsResult = {
+          ok: res.ok,
+          sid: res.sid,
+          error: res.error,
+          from,
+          to: phone,
+          body: msg,
+        };
+
+        // Best-effort log to outbound_messages so admin views stay complete.
+        if (res.ok && supaUrl && supaKey) {
+          try {
+            const sb = createClient(supaUrl, supaKey, { auth: { persistSession: false } });
+            await sb.from("outbound_messages").insert({
+              from_phone: from,
+              to_phone: phone,
+              body: msg,
+              message_sid: res.sid ?? null,
+              lead_id: body.lead_id ?? null,
+              status: "sent",
+            });
+          } catch { /* silent */ }
+        }
+      } catch (e) {
+        smsResult = { ok: false, error: (e as Error).message };
+      }
     }
   }
 
