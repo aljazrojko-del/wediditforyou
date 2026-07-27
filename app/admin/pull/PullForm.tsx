@@ -2,7 +2,33 @@
 
 import { useState } from "react";
 
-const NICHES = ["mobile mechanic", "mobile dog groomer", "tutor"];
+const NICHES = [
+  // Proven / locked niches
+  "mobile mechanic",
+  "mobile dog groomer",
+  "dog grooming",
+  "tutor",
+  // Tier S — appointment-based, DM-run, mostly no website (go next)
+  "mobile detailing",
+  "dog walking",
+  "barber shop",
+  "hair salon",
+  "nail salon",
+  "tattoo shop",
+  "house cleaning",
+  // Tier A — high pain / high ticket, harder sell
+  "locksmith",
+  "towing",
+  "garage door",
+  "plumber",
+  "hvac",
+  "roofer",
+  "pest control",
+  "tree service",
+  "junk removal",
+  "handyman",
+  "pressure washing",
+];
 
 const CITIES = [
   "Houston, TX",
