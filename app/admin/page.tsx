@@ -21,7 +21,7 @@ async function loadCities(): Promise<string[]> {
   return Array.from(new Set(data.map((r) => r.city as string).filter(Boolean))).sort();
 }
 
-async function loadLeads(params: { city?: string; status?: string; niche?: string; grade?: string }): Promise<LeadRowData[]> {
+async function loadLeads(params: { city?: string; status?: string; niche?: string; grade?: string; q?: string }): Promise<LeadRowData[]> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return [];
@@ -41,6 +41,12 @@ async function loadLeads(params: { city?: string; status?: string; niche?: strin
           .map((g) => GRADE_MAP[g] ?? g)
           .filter((g) => g.length > 0);
 
+  // Free-text search: bypass the "callable-lead" filters (has_website=false,
+  // slug/site_url present) so Aljaz can locate ANY business by name — even
+  // ones without a generated site yet — for manual lookups.
+  const searchTerm = (params.q ?? "").trim();
+  const isSearching = searchTerm.length >= 2;
+
   // Cast away the chained-filter type narrowing — it blows up TS2589 otherwise.
   // The result is re-asserted to LeadRowData[] at the end.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,18 +55,30 @@ async function loadLeads(params: { city?: string; status?: string; niche?: strin
     .select(
       "id, name, slug, city, niche, phone, site_url, owner_first_name, owner_last_name, owner_title, owner_email, owner_phone, owner_name, email, email_status, rating, rating_count, sms_sent_at, call_placed_at, inbound_count, last_inbound_at, has_website, payment_status, tier, customer_admin_token, address, source, place_id, types, facebook_url, company_domain, google_review_url, enrichment_data, enriched_at, generated_at, created_at, website_url, quality_grade",
     )
-    .eq("has_website", false)
-    .not("slug", "is", null)
-    .not("site_url", "is", null)
     .not("phone", "is", null)
-    // Grade first (A → B → C → D → E), then rating, then reviews. Highest
-    // quality leads surface first so the Mia-call button is always aimed
-    // at the best remaining lead.
     .order("quality_grade", { ascending: true, nullsFirst: false })
     .order("rating", { ascending: false, nullsFirst: false })
     .order("rating_count", { ascending: false, nullsFirst: false })
     .limit(PAGE_SIZE);
-  if (grades && grades.length > 0) q = q.in("quality_grade", grades);
+
+  // "Ready to call" filters only apply when NOT searching. During search we
+  // want to find the business even if we haven't generated a site for it yet.
+  if (!isSearching) {
+    q = q
+      .eq("has_website", false)
+      .not("slug", "is", null)
+      .not("site_url", "is", null);
+  }
+
+  if (isSearching) {
+    // ilike is case-insensitive substring match. Escape '%' and '_' in the
+    // user's input so they can't accidentally match everything or confuse
+    // the pattern parser.
+    const safe = searchTerm.replace(/[%_]/g, (m) => `\\${m}`);
+    q = q.ilike("name", `%${safe}%`);
+  }
+
+  if (grades && grades.length > 0 && !isSearching) q = q.in("quality_grade", grades);
   if (params.city) q = q.eq("city", params.city);
   if (params.niche) q = q.eq("niche", params.niche);
   if (params.status === "untouched") q = q.is("sms_sent_at", null).is("call_placed_at", null);
@@ -103,7 +121,7 @@ async function loadLeads(params: { city?: string; status?: string; niche?: strin
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ city?: string; status?: string; niche?: string; grade?: string }>;
+  searchParams: Promise<{ city?: string; status?: string; niche?: string; grade?: string; q?: string }>;
 }) {
   if (!(await isAuthed())) redirect("/admin/login");
 
@@ -115,6 +133,9 @@ export default async function AdminPage({
   if (sp.niche) filterParams.niche = sp.niche;
   if (sp.status) filterParams.status = sp.status;
   if (sp.grade) filterParams.grade = sp.grade;
+  if (sp.q) filterParams.q = sp.q;
+  const searchQuery = (sp.q ?? "").trim();
+  const isSearching = searchQuery.length >= 2;
 
   // For Blast safety: only allow batch when SMS is the action AND status is "untouched"
   // (or the user has explicitly filtered to a city/niche).
@@ -128,7 +149,15 @@ export default async function AdminPage({
           <div>
             <h1 className="text-2xl font-semibold">Leads</h1>
             <p className="text-sm text-zinc-500 mt-1">
-              {leads.length} shown {sp.city ? `in ${sp.city}` : ""}{sp.niche ? ` · ${sp.niche}` : ""}
+              {leads.length} shown
+              {isSearching ? ` matching "${searchQuery}"` : ""}
+              {sp.city ? ` in ${sp.city}` : ""}
+              {sp.niche ? ` · ${sp.niche}` : ""}
+              {isSearching && (
+                <span className="ml-2 text-xs text-amber-400">
+                  (search bypasses grade + &quot;ready to call&quot; filters)
+                </span>
+              )}
             </p>
           </div>
           <LeadFilters cities={cities} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LeadFilters({ cities }: { cities: string[] }) {
   const router = useRouter();
@@ -11,6 +12,12 @@ export default function LeadFilters({ cities }: { cities: string[] }) {
   // Default view is A+B (elite + hot) so the Mia-call button is aimed at
   // premium leads by default. User can widen to C+D or "all" explicitly.
   const grade = sp.get("grade") ?? "A,B";
+  const qParam = sp.get("q") ?? "";
+
+  // Local state on the search input so typing feels instant; navigate
+  // on submit (Enter) or when the input blurs after a real change.
+  const [qDraft, setQDraft] = useState(qParam);
+  useEffect(() => { setQDraft(qParam); }, [qParam]);
 
   function update(k: string, v: string) {
     const next = new URLSearchParams(sp.toString());
@@ -19,8 +26,37 @@ export default function LeadFilters({ cities }: { cities: string[] }) {
     router.replace(`/admin?${next.toString()}`);
   }
 
+  function commitSearch(value: string) {
+    if (value === qParam) return;
+    update("q", value);
+  }
+
   return (
     <div className="flex flex-wrap gap-2 items-center">
+      <form
+        onSubmit={(e) => { e.preventDefault(); commitSearch(qDraft.trim()); }}
+        className="flex items-center gap-1"
+      >
+        <input
+          type="search"
+          placeholder="Search by business name…"
+          value={qDraft}
+          onChange={(e) => setQDraft(e.target.value)}
+          onBlur={() => commitSearch(qDraft.trim())}
+          className="bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-sm w-56 focus:outline-none focus:border-emerald-700"
+          title="Enter to search — bypasses grade + ready-to-call filters"
+        />
+        {qParam && (
+          <button
+            type="button"
+            onClick={() => { setQDraft(""); commitSearch(""); }}
+            className="text-zinc-500 hover:text-zinc-200 px-2 py-2 text-sm"
+            title="Clear search"
+          >
+            ✕
+          </button>
+        )}
+      </form>
       <select
         value={grade}
         onChange={(e) => update("grade", e.target.value)}
