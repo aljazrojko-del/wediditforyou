@@ -36,6 +36,9 @@ export default function AdminNav() {
           <Link href="/admin/alex" className="text-sm text-zinc-400 hover:text-zinc-100">
             Alex
           </Link>
+          <Link href="/admin/ai-caller" className="text-sm text-zinc-400 hover:text-zinc-100">
+            AI Caller
+          </Link>
           <Link href="/admin/onboarding" className="text-sm text-zinc-400 hover:text-zinc-100">
             Onboarding
           </Link>
