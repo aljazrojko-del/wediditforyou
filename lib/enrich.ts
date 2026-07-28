@@ -196,24 +196,44 @@ async function quickemailVerify(email: string): Promise<QuickEmailResult | null>
 }
 
 // ─── Owner-name extraction from business name ──────────────────────────
-// Catches: "Hector's Mobile Auto", "Joe's Plumbing & Drain", "Maria Garcia Hair Studio"
-// Misses: generic names like "Bayou City Plumbing", "Greenline Landscape" — returns null
+// Catches: "Hector's Mobile Auto", "Maria Garcia Hair Studio"
+// Rejects: "Auto Repair", "Success Learning Center", "Brainiac Zone",
+//          "El Paso Autos" — where the leading tokens are business words,
+//          not real US given names.
+//
+// Validated against US_FIRST_NAMES whitelist so we never pass garbage
+// tokens to LeadMagic / Hunter / QuickEmail downstream.
+
+import { looksLikeFirstName, US_FIRST_NAMES, BUSINESS_WORDS } from "./us-first-names";
 
 export function guessOwnerName(businessName: string): { first?: string; last?: string } {
   // Possessive form: "Pat's", "Hector's", "Maria's" — handle straight + curly apostrophes (', ', ‛)
   const possessive = businessName.match(/^([A-Z][a-z]+)['‘’ʼ]s\b/);
-  if (possessive) return { first: possessive[1] };
+  if (possessive) {
+    const candidate = possessive[1];
+    if (looksLikeFirstName(candidate)) return { first: candidate };
+    return {};
+  }
 
-  // "Firstname Lastname" prefix — skip if both words are generic descriptors
+  // "Firstname Lastname" prefix — both tokens must look name-like AND the
+  // first token must be on the US first-name whitelist.
   const firstWords = businessName.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)\b/);
   if (firstWords) {
-    const generic = /^(the|best|premier|elite|royal|gold|silver|new|old|first|big|little|mobile|local|bayou|city|greenline|riverside|sunrise|sunset|north|south|east|west|main|grand|pro|professional)$/i;
-    if (!generic.test(firstWords[1]) && !generic.test(firstWords[2])) {
-      return { first: firstWords[1], last: firstWords[2] };
+    const first = firstWords[1];
+    const last = firstWords[2];
+    if (
+      looksLikeFirstName(first) &&
+      // Last name check is looser — anything not on the business blocklist
+      !BUSINESS_WORDS.has(last.toLowerCase())
+    ) {
+      return { first, last };
     }
   }
   return {};
 }
+
+// Re-export the whitelist so callers can check confidence.
+export { US_FIRST_NAMES, BUSINESS_WORDS, looksLikeFirstName };
 
 // ─── Domain-pattern generation ──────────────────────────────────────────
 

@@ -49,15 +49,15 @@ export default function Founder() {
           <div className="mt-8 flex items-center gap-4">
             {/*
               TODO Alex: drop a real headshot at public/alex.jpg, then replace this
-              initials avatar with: <Image src="/alex.jpg" alt="Alex Rojko" fill className="object-cover" />
+              initials avatar with: <Image src="/alex.jpg" alt="Alex" fill className="object-cover" />
               Real photo is the #1 missing trust signal per buyer audit.
             */}
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#1F1814]/15 bg-gradient-to-br from-[#C2410C] to-[#9A3412] font-mono text-base font-bold tracking-tight text-white shadow-sm">
-              AR
+              A
             </div>
             <div>
               <div className="text-sm font-semibold text-[#1F1814]">
-                Alex Rojko
+                Alex
               </div>
               <div className="text-xs uppercase tracking-[0.2em] text-[#1F1814]/55">
                 Founder · I answer every email myself

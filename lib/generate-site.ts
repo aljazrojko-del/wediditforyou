@@ -260,5 +260,6 @@ export async function generateSiteData(lead: LeadInput): Promise<SiteData> {
     about: content.about,
     heroImage: bank.hero,
     gallery: bank.gallery.map((g) => ({ ...g, cap: `${g.cap} · ${lead.city}` })),
+    theme: null,
   };
 }

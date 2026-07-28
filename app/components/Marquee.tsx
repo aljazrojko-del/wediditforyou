@@ -13,18 +13,22 @@ export default function Marquee() {
 
   return (
     <div className="border-y border-[#1F1814]/10 bg-[#1F1814] text-[#FAF6F0]">
-      <div className="overflow-hidden">
-        <div className="marquee-track flex w-max gap-12 py-3 text-xs font-medium tracking-wide">
+      <div className="relative overflow-hidden">
+        {/* Fade-out edges so items don't get awkwardly cut off mid-text */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-[#1F1814] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-[#1F1814] to-transparent" />
+
+        <div className="marquee-track flex w-max gap-14 py-4 text-sm font-medium tracking-wide sm:py-5">
           {doubled.map((item, i) => (
             <div
               key={i}
-              className="flex shrink-0 items-center gap-3 whitespace-nowrap"
+              className="flex shrink-0 items-center gap-4 whitespace-nowrap"
             >
-              <span className="font-mono uppercase tracking-[0.25em] text-[#E89A6B]">
+              <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.28em] text-[#E89A6B]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#E89A6B]" />
                 {i % 2 === 0 ? "Built" : "Live"}
               </span>
-              <span className="text-[#FAF6F0]/85">{item}</span>
-              <span className="text-[#FAF6F0]/30">·</span>
+              <span className="text-[#FAF6F0]/90">{item}</span>
             </div>
           ))}
         </div>
@@ -35,10 +39,15 @@ export default function Marquee() {
           100% { transform: translateX(-50%); }
         }
         .marquee-track {
-          animation: marquee-scroll 28s linear infinite;
+          animation: marquee-scroll 38s linear infinite;
         }
         .marquee-track:hover {
           animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .marquee-track {
+            animation-duration: 80s;
+          }
         }
       `}</style>
     </div>

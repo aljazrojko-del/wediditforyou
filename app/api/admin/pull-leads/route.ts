@@ -12,7 +12,7 @@ import { enrichAll } from "@/scripts/enrich-leads";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 type Body = {
   niche?: string;
@@ -20,6 +20,11 @@ type Body = {
   pages?: number;
   minRating?: number | null;
   minReviews?: number | null;
+  // Off by default. Sites are only generated when a lead shows real intent
+  // (books a call). Pulls store the raw lead + phone; site-gen is deferred.
+  generate_sites?: boolean;
+  // Off by default for the same reason — enrichment costs API credits.
+  enrich?: boolean;
 };
 
 function placeToRow(p: PlaceResult, niche: string, city: string): LeadRow {
@@ -98,15 +103,24 @@ export async function POST(req: Request) {
   const supabase = makeClient();
   const { inserted, skipped } = await upsertLeads(supabase, rows);
 
+  // Site generation + enrichment are off by default. Both cost API credits
+  // and neither is worth spending on a raw cold lead. Sites are generated
+  // when a lead books a call (via booking webhook / manual trigger).
+  // Enrichment is triggered on demand from /api/admin/enrich-batch.
+  const shouldGenerate = body.generate_sites === true;
+  const shouldEnrich = body.enrich === true;
+
   let generated = 0;
   let enriched = 0;
-  if (inserted > 0) {
+  if (inserted > 0 && shouldGenerate) {
     try {
       const g = await generateAll({ limit: inserted });
       generated = g.ok;
     } catch (e) {
       console.error("[pull-leads] generate failed:", (e as Error).message);
     }
+  }
+  if (inserted > 0 && shouldEnrich) {
     try {
       const e2 = await enrichAll({ limit: inserted });
       enriched = e2.ok;

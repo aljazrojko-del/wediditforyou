@@ -130,7 +130,9 @@ export default function ContactForm() {
     const requiredByStep: Record<number, string[]> = {
       0: ["businessName", "niche", "location"],
       1: [],
-      2: ["name", "email", "phone", "smsConsent"],
+      // smsConsent is NOT required — carrier compliance forbids "forced consent"
+      // (TCPA / A2P 10DLC). Users can submit with or without ticking it.
+      2: ["name", "email", "phone"],
     };
     const required = requiredByStep[currentStep] || [];
 
@@ -631,26 +633,27 @@ export default function ContactForm() {
               </div>
             </div>
 
-            {/* SMS consent — required by carrier (TCPA / A2P 10DLC). Must be
-                explicit + unchecked by default. Submit handler blocks if not
-                ticked. Phrased plain-English; the legal disclosure stays
-                visible above the submit button. */}
+            {/* SMS consent — OPTIONAL per A2P 10DLC carrier rules. Requiring
+                the checkbox would constitute "forced consent" which carriers
+                reject. The disclosure stays prominently visible; ticking the
+                box just records consent on the lead so we know whether SMS
+                outreach is allowed for that prospect downstream. */}
             <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-[#1F1814]/15 bg-[#FAF6F0] px-4 py-3 has-[:checked]:border-[#C2410C] has-[:checked]:bg-[#C2410C]/5">
               <input
                 id="smsConsent"
                 name="smsConsent"
                 type="checkbox"
-                required
                 className="mt-0.5 h-4 w-4 accent-[#C2410C]"
               />
               <span className="text-sm text-[#1F1814]/80">
                 <strong className="font-semibold text-[#1F1814]">
-                  Yes, text me my preview.
+                  Text me my preview (optional).
                 </strong>{" "}
-                I agree to receive SMS from We Did It For You at the number above
-                about my free website preview and order updates. Message frequency
-                varies. Msg &amp; data rates may apply. Reply STOP to opt out,
-                HELP for help. See our{" "}
+                Check this box and we&apos;ll text you the preview URL too. By
+                ticking it you agree to receive SMS from We Did It For You at
+                the number above about your free preview and order updates.
+                Message frequency varies. Msg &amp; data rates may apply. Reply
+                STOP to opt out, HELP for help. See our{" "}
                 <a
                   href="/privacy"
                   target="_blank"
@@ -659,7 +662,8 @@ export default function ContactForm() {
                 >
                   Privacy Policy
                 </a>
-                .
+                . Leaving it unchecked is totally fine — we&apos;ll still email
+                you the preview.
               </span>
             </label>
           </fieldset>

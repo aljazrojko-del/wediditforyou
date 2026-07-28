@@ -23,6 +23,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@gsap/react": "^2.1.2",
+    "@signalwire/js": "^4.0.0-rc.2",
     "@supabase/supabase-js": "^2.105.1",
     "@vercel/blob": "^2.3.3",
     "gsap": "^3.15.0",

@@ -5,13 +5,36 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
+export type SiteTheme = {
+  bg?: string;
+  accent?: string;
+  accentContrast?: string;
+  text?: string;
+  textMuted?: string;
+};
+
 export type SiteContent = {
   headline?: string | null;
   subheadline?: string | null;
   services?: Array<{ title: string; description: string }> | null;
   reviews?: Array<{ author: string; quote: string; rating?: number }> | null;
   about_text?: string | null;
+  theme?: SiteTheme | null;
 };
+
+const HEX_REGEX = /^#[0-9a-fA-F]{6}$/;
+
+function safeHex(input: unknown, fallback: string | undefined): string | undefined {
+  if (typeof input !== "string") return fallback;
+  const trimmed = input.trim();
+  if (HEX_REGEX.test(trimmed)) return trimmed.toLowerCase();
+  // Try expanding 3-digit hex
+  if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+    const expanded = "#" + trimmed.slice(1).split("").map((c) => c + c).join("");
+    return expanded.toLowerCase();
+  }
+  return fallback;
+}
 
 export type ApplyResult = {
   ok: boolean;
@@ -30,13 +53,25 @@ Rules:
 - about_text stays under 600 chars.
 - Never invent fake reviews or fake business facts.
 - If the owner asks for something impossible, refuse politely in a top-level "refusal" field.
-- Output VALID JSON only. No prose, no markdown fences.`;
+- Output VALID JSON only. No prose, no markdown fences.
+
+Color theme: the content may include a "theme" object with hex codes for bg, accent, accentContrast, text, textMuted. If the owner describes color/look preferences ("brighter and warmer", "more masculine and dark", "blue and white", "pastel"), update the "theme" object with valid 6-digit hex codes (#RRGGBB) that fit the description.
+
+Color rules:
+- All hex codes must be 6 digits, format "#RRGGBB". No 3-digit shorthand, no rgb(), no named colors.
+- "accentContrast" must be readable on top of "accent" — if accent is dark, accentContrast is light, and vice versa.
+- "text" must be readable on "bg" — same contrast rule.
+- "textMuted" is a softer version of text (60-70% opacity equivalent in the same hue family).
+- If theme isn't mentioned in the owner's request, return the existing theme unchanged.`;
 
 export async function applyChangeWithClaude(
   current: SiteContent,
   changeDescription: string,
 ): Promise<ApplyResult> {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // Vercel sometimes stores env values with stray whitespace/newlines from
+  // CLI imports — trim defensively so the auth header isn't malformed.
+  const apiKey = process.env.ANTHROPIC_API_KEY?.trim();
+  if (!apiKey) {
     return { ok: false, error: "ANTHROPIC_API_KEY not configured" };
   }
   if (!changeDescription || changeDescription.trim().length < 3) {
@@ -46,7 +81,7 @@ export async function applyChangeWithClaude(
     return { ok: false, error: "Change description is too long (max 2000 chars)" };
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const client = new Anthropic({ apiKey });
 
   const userMsg = `Current content:
 ${JSON.stringify(current, null, 2)}
@@ -87,6 +122,23 @@ Return the updated JSON now.`;
       return { ok: false, error: obj.refusal };
     }
 
+    // Validate theme — preserve current theme if model returns invalid hex
+    let nextTheme: SiteTheme | null = current.theme ?? null;
+    if (obj.theme && typeof obj.theme === "object") {
+      const tIn = obj.theme as Record<string, unknown>;
+      const curTheme = current.theme ?? {};
+      const candidate: SiteTheme = {
+        bg: safeHex(tIn.bg, curTheme.bg),
+        accent: safeHex(tIn.accent, curTheme.accent),
+        accentContrast: safeHex(tIn.accentContrast, curTheme.accentContrast),
+        text: safeHex(tIn.text, curTheme.text),
+        textMuted: safeHex(tIn.textMuted, curTheme.textMuted),
+      };
+      // Only save theme if at least one field is set
+      const hasAny = Object.values(candidate).some((v) => v !== undefined);
+      nextTheme = hasAny ? candidate : null;
+    }
+
     const next: SiteContent = {
       headline:
         typeof obj.headline === "string"
@@ -122,6 +174,7 @@ Return the updated JSON now.`;
         typeof obj.about_text === "string"
           ? obj.about_text.slice(0, 600)
           : current.about_text ?? null,
+      theme: nextTheme,
     };
 
     return { ok: true, newContent: next };

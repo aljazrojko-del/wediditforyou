@@ -23,6 +23,8 @@ type Stage =
 
 export const dynamic = "force-dynamic";
 
+type LogoOption = { style: string; url: string };
+
 type LeadView = {
   id: string;
   name: string;
@@ -31,6 +33,8 @@ type LeadView = {
   site_url: string | null;
   payment_status: string | null;
   tier: string | null;
+  logo_options: LogoOption[] | null;
+  logo_url: string | null;
 };
 
 type OnboardingView = {
@@ -50,7 +54,7 @@ async function loadLeadAndOnboarding(
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { data: lead } = await supabase
     .from("leads")
-    .select("id, name, slug, city, site_url, payment_status, tier")
+    .select("id, name, slug, city, site_url, payment_status, tier, logo_options, logo_url")
     .eq("customer_admin_token", token)
     .maybeSingle<LeadView>();
   if (!lead) return null;

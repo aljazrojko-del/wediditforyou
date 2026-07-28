@@ -27,11 +27,46 @@
 //   500 all channels failed (errors in body)
 
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { SignalWireClient } from "@/lib/signalwire-client";
 import { isValidEmail, sendLinkEmail } from "@/lib/email";
 import { buildSmsBody, normalizeE164 } from "@/lib/outreach";
 
 export const runtime = "nodejs";
+
+// Log every SMS attempt (success + failure) to outbound_messages so silent
+// same-account deliveries, carrier rejects, and successful sends all show up
+// in the admin UI + audit trail. Best-effort — DB write failures don't block
+// the send-link response.
+async function logSmsAttempt(opts: {
+  from: string;
+  to: string;
+  body: string;
+  sid: string | null;
+  ok: boolean;
+  error: string | null;
+  leadId: string | null;
+  source: string | null;
+}): Promise<void> {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return;
+  try {
+    const supabase = createClient(url, key, { auth: { persistSession: false } });
+    await supabase.from("outbound_messages").insert({
+      from_phone: opts.from,
+      to_phone: opts.to,
+      body: opts.body,
+      message_sid: opts.sid,
+      lead_id: opts.leadId,
+      status: opts.ok ? "queued" : "failed",
+      error: opts.error,
+      raw: { source: opts.source ?? "send-link", via: "outreach/send-link" },
+    });
+  } catch (e) {
+    console.error("[send-link] outbound_messages log failed:", (e as Error).message);
+  }
+}
 
 type Channel = "auto" | "sms" | "email" | "both";
 
@@ -90,7 +125,17 @@ export async function POST(req: Request) {
   const channel: Channel = body.channel ?? "auto";
   const firstName = (body.first_name ?? "there").trim();
   const siteUrl = (body.site_url ?? "").trim();
-  if (!siteUrl) return badRequest("site_url required");
+  // site_url is only required when we need it to build the default SMS/email
+  // body. If the caller supplies a custom sms_body + email_body, we can send
+  // ad-hoc messages without a site URL (used by the admin SMS composer).
+  const hasCustomSmsBody = typeof body.sms_body === "string" && body.sms_body.trim().length > 0;
+  const hasCustomEmailBody = typeof body.email_body === "string" && body.email_body.trim().length > 0;
+  const needsSiteUrl =
+    (channel === "sms" && !hasCustomSmsBody) ||
+    (channel === "email" && !hasCustomEmailBody) ||
+    (channel === "both" && (!hasCustomSmsBody || !hasCustomEmailBody)) ||
+    (channel === "auto" && !hasCustomSmsBody && !hasCustomEmailBody);
+  if (needsSiteUrl && !siteUrl) return badRequest("site_url required (or provide custom sms_body/email_body)");
 
   const phone = body.to_phone ? normalizeE164(body.to_phone) : null;
   const email = body.to_email && isValidEmail(body.to_email) ? body.to_email.trim() : null;
@@ -132,10 +177,13 @@ export async function POST(req: Request) {
       const smsBody = body.sms_body ?? buildSmsBody(firstName, siteUrl);
       try {
         const sw = new SignalWireClient();
+        // Dallas is the only A2P-10DLC-approved SMS sender. Never fall back
+        // to Houston (retired) or Phoenix/Nashville/Chicago (voice-only for
+        // now) — those trigger 21601 "from not SMS-capable".
         const from =
           body.from_phone ??
           sw.pickFromNumber(body.to_city) ??
-          process.env.SIGNALWIRE_PHONE_HOUSTON ??
+          process.env.SIGNALWIRE_PHONE_DALLAS ??
           "";
         if (!from) {
           attempts.push({
@@ -143,8 +191,28 @@ export async function POST(req: Request) {
             ok: false,
             error: "no_from_number_available",
           });
+          await logSmsAttempt({
+            from: "",
+            to: phone,
+            body: smsBody,
+            sid: null,
+            ok: false,
+            error: "no_from_number_available",
+            leadId: body.lead_id ?? null,
+            source: body.source ?? null,
+          });
         } else {
           const result = await sw.sendSms({ from, to: phone, body: smsBody });
+          await logSmsAttempt({
+            from,
+            to: phone,
+            body: smsBody,
+            sid: result.sid ?? null,
+            ok: result.ok,
+            error: result.ok ? null : (result.error ?? "unknown_sms_error"),
+            leadId: body.lead_id ?? null,
+            source: body.source ?? null,
+          });
           if (result.ok && result.sid) {
             attempts.push({ channel: "sms", ok: true, id: result.sid });
             sentOn.push("sms");
@@ -158,7 +226,18 @@ export async function POST(req: Request) {
           });
         }
       } catch (err) {
-        attempts.push({ channel: "sms", ok: false, error: (err as Error).message });
+        const errMsg = (err as Error).message;
+        attempts.push({ channel: "sms", ok: false, error: errMsg });
+        await logSmsAttempt({
+          from: "",
+          to: phone,
+          body: smsBody,
+          sid: null,
+          ok: false,
+          error: errMsg,
+          leadId: body.lead_id ?? null,
+          source: body.source ?? null,
+        });
       }
     } else if (c === "email" && email) {
       const result = await sendLinkEmail({

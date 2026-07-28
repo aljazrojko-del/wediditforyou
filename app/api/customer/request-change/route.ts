@@ -54,7 +54,7 @@ export async function POST(req: Request) {
   const sb = supabase();
   const { data: lead, error: leadErr } = await sb
     .from("leads")
-    .select("id, headline, subheadline, services, reviews, about_text")
+    .select("id, headline, subheadline, services, reviews, about_text, theme")
     .eq("customer_admin_token", token)
     .maybeSingle<{
       id: string;
@@ -63,6 +63,7 @@ export async function POST(req: Request) {
       services: SiteContent["services"];
       reviews: SiteContent["reviews"];
       about_text: string | null;
+      theme: SiteContent["theme"];
     }>();
 
   if (leadErr) return NextResponse.json({ error: leadErr.message }, { status: 500 });
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
     services: lead.services ?? null,
     reviews: lead.reviews ?? null,
     about_text: lead.about_text,
+    theme: lead.theme ?? null,
   };
 
   // Insert pending request first so we have an audit row even on failure.
@@ -114,6 +116,7 @@ export async function POST(req: Request) {
       services: next.services,
       reviews: next.reviews,
       about_text: next.about_text,
+      theme: next.theme ?? null,
     })
     .eq("id", lead.id);
 
