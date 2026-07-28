@@ -288,9 +288,41 @@ function withToken(url: string, token: string | null | undefined): string {
   return `${url}${sep}token=${encodeURIComponent(token)}`;
 }
 
-export default async function RecordingsPage() {
+// URL-driven filters on the recordings list. Aljaz uses "talked" the most —
+// it's the only view where callback outreach is likely to be worth his time
+// (picked-up + real audio, not the empty-transcript 1s garbage rows from the
+// pre-IfMachine-fix batches).
+type Filter = "all" | "talked" | "picked" | "voicemail" | "booked";
+function parseFilter(v: string | undefined): Filter {
+  const s = (v ?? "").toLowerCase();
+  if (s === "talked" || s === "picked" || s === "voicemail" || s === "booked") return s;
+  return "all";
+}
+function matchesFilter(row: Row, filter: Filter): boolean {
+  const cls = classifyPickup(row.sw_answered_by).cls;
+  if (filter === "all") return true;
+  if (filter === "booked") return row.meeting_booked === true;
+  if (filter === "picked") return cls === "PICKED_UP";
+  if (filter === "voicemail") return cls === "VOICEMAIL";
+  if (filter === "talked") {
+    // Real conversation: SW says human-side + at least 10 seconds of audio.
+    // Ten seconds is enough to have exchanged something beyond a "wrong number,
+    // bye" click; below that we're just watching the hangup.
+    return cls === "PICKED_UP" && (row.duration_sec ?? 0) >= 10;
+  }
+  return true;
+}
+
+export default async function RecordingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
   if (!(await isAuthed())) redirect("/admin/login");
-  const rows = await loadRecordings();
+  const sp = await searchParams;
+  const filter = parseFilter(sp.filter);
+  const allRows = await loadRecordings();
+  const rows = allRows.filter((r) => matchesFilter(r, filter));
   const token = process.env.OUTREACH_AUTH_TOKEN ?? "";
 
   return (
@@ -300,10 +332,54 @@ export default async function RecordingsPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-semibold">Call recordings</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {rows.length} recording{rows.length === 1 ? "" : "s"} · classification
+            {rows.length} of {allRows.length} · classification
             from SignalWire <code className="text-zinc-400">answered_by</code>
           </p>
         </div>
+
+        {/* Filter tabs — URL-driven so links / bookmarks stick. */}
+        {(() => {
+          const counts = {
+            all: allRows.length,
+            talked: allRows.filter((r) => matchesFilter(r, "talked")).length,
+            picked: allRows.filter((r) => matchesFilter(r, "picked")).length,
+            voicemail: allRows.filter((r) => matchesFilter(r, "voicemail")).length,
+            booked: allRows.filter((r) => matchesFilter(r, "booked")).length,
+          };
+          const tabs: Array<{ key: Filter; label: string; hint: string }> = [
+            { key: "talked", label: "Talked", hint: "picked up + ≥10s audio (worth calling back)" },
+            { key: "booked", label: "Booked", hint: "meeting confirmed" },
+            { key: "picked", label: "Picked up", hint: "any human/unknown pickup" },
+            { key: "voicemail", label: "Voicemail", hint: "machine detected" },
+            { key: "all", label: "All", hint: "everything" },
+          ];
+          return (
+            <div className="mb-6 flex flex-wrap gap-2">
+              {tabs.map((t) => {
+                const active = filter === t.key;
+                const n = counts[t.key];
+                return (
+                  <a
+                    key={t.key}
+                    href={t.key === "all" ? "/admin/recordings" : `/admin/recordings?filter=${t.key}`}
+                    title={t.hint}
+                    className={
+                      "px-3 py-1.5 rounded text-sm border transition-colors " +
+                      (active
+                        ? "border-emerald-700 bg-emerald-900/40 text-emerald-100"
+                        : "border-zinc-800 bg-zinc-950 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200")
+                    }
+                  >
+                    {t.label}{" "}
+                    <span className={active ? "text-emerald-400" : "text-zinc-600"}>
+                      ({n})
+                    </span>
+                  </a>
+                );
+              })}
+            </div>
+          );
+        })()}
 
         {/* Reality-check panel: how many "no-answer" per Luka were actually humans */}
         {(() => {
@@ -429,7 +505,18 @@ export default async function RecordingsPage() {
                       )}
                       <div className="text-xs text-zinc-500 mt-0.5">
                         {r.lead?.city ? `${r.lead.city} · ` : ""}
-                        {r.phone ?? "—"} · {fmtDur(r.duration_sec)}
+                        {r.phone ? (
+                          <a
+                            href={`tel:${r.phone.replace(/[^+0-9]/g, "")}`}
+                            className="text-sky-400 hover:text-sky-300 underline decoration-dotted underline-offset-2"
+                            title="Tap to call from this device"
+                          >
+                            {r.phone}
+                          </a>
+                        ) : (
+                          "—"
+                        )}{" "}
+                        · {fmtDur(r.duration_sec)}
                         {r.intent && r.intent !== "negative" && (
                           <span className="ml-2 text-emerald-400">{r.intent}</span>
                         )}
