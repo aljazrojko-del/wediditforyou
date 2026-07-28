@@ -165,13 +165,31 @@ export default function TemplateAuto({ data }: { data: SiteData }) {
 
       <section className="border-t border-current/10">
         <div className="mx-auto w-full max-w-6xl px-6 py-20">
-          <h2 className="mb-12 text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">{data.city} trusts us.</h2>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="mb-12 flex items-end justify-between gap-4">
+            <h2 className="text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">{data.city} trusts us.</h2>
+            <div className="hidden text-xs font-bold uppercase tracking-widest text-[var(--t-text-muted)] sm:block">
+              {data.reviews.length} verified Google reviews · swipe
+            </div>
+          </div>
+          {/*
+            Horizontal review carousel. CSS-only: overflow-x-auto + scroll-snap
+            makes each card lock nicely on mobile swipe and desktop drag.
+            No JS, no bundler cost, no client component boundary needed.
+          */}
+          <div
+            className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-5"
+            style={{ scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" }}
+          >
             {data.reviews.map((r) => (
-              <figure key={r.name} className="border border-current/10 bg-[var(--t-bg-surface)] p-7">
+              <figure
+                key={r.name}
+                className="flex min-h-[240px] w-[85%] shrink-0 snap-start flex-col border border-current/10 bg-[var(--t-bg-surface)] p-7 sm:w-[420px]"
+              >
                 <div className="mb-3 text-[var(--t-accent)]">★★★★★</div>
-                <blockquote className="text-[var(--t-text)]">&ldquo;{r.quote}&rdquo;</blockquote>
-                <figcaption className="mt-5 text-xs uppercase tracking-widest text-[var(--t-text-muted)]">{r.name} · {data.city}</figcaption>
+                <blockquote className="flex-1 text-[var(--t-text)]">&ldquo;{r.quote}&rdquo;</blockquote>
+                <figcaption className="mt-5 text-xs uppercase tracking-widest text-[var(--t-text-muted)]">
+                  {r.name} · Google review
+                </figcaption>
               </figure>
             ))}
           </div>

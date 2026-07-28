@@ -16,6 +16,7 @@ export type LeadInput = {
   address: string | null;
   rating: number | null;
   rating_count: number | null;
+  facebook_url?: string | null;
 };
 
 type AIContent = {
@@ -188,10 +189,88 @@ function extractJSON(text: string): unknown | null {
   }
 }
 
-async function aiContent(lead: LeadInput): Promise<AIContent> {
+// Pull real-world context via Serper so Claude has something to ground in
+// instead of hallucinating quotes. Best-effort: if Serper is unavailable or
+// the queries return nothing, we still ship a Claude-personalized page from
+// metadata alone — no crash, no fallback-to-static.
+async function fetchLeadContext(lead: LeadInput & { facebook_url?: string | null }): Promise<{
+  googleReviewSnippets: string[];
+  facebookSnippets: string[];
+  otherSnippets: string[];
+}> {
+  const key = process.env.SERPER_API_KEY;
+  if (!key) return { googleReviewSnippets: [], facebookSnippets: [], otherSnippets: [] };
+
+  async function serper(q: string, num = 10): Promise<Array<{ title: string; snippet?: string; link: string }>> {
+    try {
+      const r = await fetch("https://google.serper.dev/search", {
+        method: "POST",
+        headers: { "X-API-KEY": key, "Content-Type": "application/json" },
+        body: JSON.stringify({ q, num }),
+      });
+      if (!r.ok) return [];
+      const j = (await r.json()) as { organic?: Array<{ title: string; snippet?: string; link: string }> };
+      return j.organic ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Reviews query — targets Google Maps / review-aggregator pages.
+  const q1 = `"${lead.name}" ${lead.city} review`;
+  const q2 = `"${lead.name}" ${lead.city} site:facebook.com`;
+  const q3 = `"${lead.name}" ${lead.city} services OR menu OR pricing`;
+
+  const [r1, r2, r3] = await Promise.all([serper(q1, 10), serper(q2, 5), serper(q3, 5)]);
+
+  const googleReviewSnippets: string[] = [];
+  const facebookSnippets: string[] = [];
+  const otherSnippets: string[] = [];
+  for (const r of r1) {
+    if (!r.snippet) continue;
+    if (/google\.com\/maps|yelp\.com|nextdoor\.com|bbb\.org|angi\.com|thumbtack/i.test(r.link)) {
+      googleReviewSnippets.push(r.snippet);
+    } else if (!/facebook\.com/i.test(r.link)) {
+      otherSnippets.push(r.snippet);
+    }
+  }
+  for (const r of r2) {
+    if (r.snippet) facebookSnippets.push(r.snippet);
+  }
+  for (const r of r3) {
+    if (r.snippet && !otherSnippets.includes(r.snippet)) otherSnippets.push(r.snippet);
+  }
+
+  return {
+    googleReviewSnippets: googleReviewSnippets.slice(0, 6),
+    facebookSnippets: facebookSnippets.slice(0, 3),
+    otherSnippets: otherSnippets.slice(0, 4),
+  };
+}
+
+async function aiContent(lead: LeadInput & { facebook_url?: string | null }): Promise<AIContent> {
   const fallback = STATIC_FALLBACK[lead.niche](lead.name, lead.city);
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return fallback;
+
+  const ctx = await fetchLeadContext(lead);
+  const hasContext = ctx.googleReviewSnippets.length > 0 || ctx.facebookSnippets.length > 0 || ctx.otherSnippets.length > 0;
+
+  const sourceBlock = hasContext
+    ? `
+
+SOURCE MATERIAL — real snippets pulled from the web. Ground your copy in these; when you write a review quote, base it on the language and specifics you see here (real services mentioned, real neighborhoods, real prices). Do NOT copy verbatim; rewrite as first-person customer voice.
+
+Google / Yelp / review-site snippets:
+${ctx.googleReviewSnippets.map((s, i) => `  [${i + 1}] ${s}`).join("\n") || "  (none)"}
+
+Facebook page snippets:
+${ctx.facebookSnippets.map((s, i) => `  [${i + 1}] ${s}`).join("\n") || "  (none)"}
+
+Other web mentions:
+${ctx.otherSnippets.map((s, i) => `  [${i + 1}] ${s}`).join("\n") || "  (none)"}
+`
+    : "";
 
   const client = new Anthropic({ apiKey: key });
   const prompt = `You write hero copy for hyper-local small-business websites.
@@ -200,7 +279,8 @@ Business: "${lead.name}"
 Niche: ${lead.niche}
 City: ${lead.city}
 Google rating: ${lead.rating ?? "unknown"} (${lead.rating_count ?? 0} reviews)
-
+${lead.facebook_url ? `Facebook: ${lead.facebook_url}` : ""}
+${sourceBlock}
 Write a complete first-draft for their new website. Output ONLY valid JSON in this exact shape — no preamble, no markdown, no fences:
 
 {
@@ -220,7 +300,7 @@ Write a complete first-draft for their new website. Output ONLY valid JSON in th
   "about": "two sentences, founder-voice, names the city, no corporate filler"
 }
 
-Rules: plain text only, no markdown markers, no asterisks, no emojis. Each piece should feel like a confident local business owner wrote it for the niche of ${lead.niche} in ${lead.city}.`;
+Rules: plain text only, no markdown markers, no asterisks, no emojis. Each piece should feel like a confident local business owner wrote it for the niche of ${lead.niche} in ${lead.city}.${hasContext ? " Use SOURCE MATERIAL specifics (real services offered, real neighborhoods mentioned, real pricing points) — do not invent facts that contradict what the snippets show." : ""}`;
 
   try {
     const res = await client.messages.create({

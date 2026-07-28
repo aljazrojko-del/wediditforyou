@@ -13,7 +13,7 @@ import { normalizeNiche } from "../app/sites/_templates/utils";
 
 const SITE_ORIGIN = process.env.SITE_ORIGIN ?? "https://sites.wedidit4you.com";
 
-export type GenerateOpts = { force?: boolean; limit?: number };
+export type GenerateOpts = { force?: boolean; limit?: number; id?: string };
 export type GenerateResult = { ok: number; skipped: number; failed: number };
 
 export async function generateAll(opts: GenerateOpts = {}): Promise<GenerateResult> {
@@ -23,10 +23,17 @@ export async function generateAll(opts: GenerateOpts = {}): Promise<GenerateResu
 
   let query = supabase
     .from("leads")
-    .select("id, name, niche, city, phone, address, rating, rating_count, site_url")
+    .select("id, name, niche, city, phone, address, rating, rating_count, site_url, facebook_url")
     .eq("has_website", false)
     .limit(limit);
-  if (!force) query = query.is("site_url", null);
+  // Targeted mode: generate one lead by id (bypasses has_website / site_url
+  // guards so the user can force-regen a specific lead without running the
+  // whole 1,000+ batch). Pairs with the CLI's --id flag.
+  if (opts.id) query = supabase
+    .from("leads")
+    .select("id, name, niche, city, phone, address, rating, rating_count, site_url, facebook_url")
+    .eq("id", opts.id);
+  if (!force && !opts.id) query = query.is("site_url", null);
 
   const { data: rows, error } = await query;
   if (error) throw new Error(`Supabase select failed: ${error.message}`);
@@ -56,6 +63,7 @@ export async function generateAll(opts: GenerateOpts = {}): Promise<GenerateResu
         address: row.address,
         rating: row.rating,
         rating_count: row.rating_count,
+        facebook_url: row.facebook_url ?? null,
       });
       const url = `${SITE_ORIGIN}/${site.slug}`;
       const { error: upErr } = await supabase
@@ -90,6 +98,7 @@ function parseArgs(argv: string[]): GenerateOpts {
     const a = argv[i];
     if (a === "--force") out.force = true;
     else if (a === "--limit") out.limit = parseInt(argv[++i], 10) || undefined;
+    else if (a === "--id") out.id = argv[++i];
   }
   return out;
 }
