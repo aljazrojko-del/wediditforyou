@@ -6,6 +6,7 @@ import type {
   Review,
   Service,
   SiteData,
+  Theme,
 } from "../_templates/types";
 import { TEMPLATES, normalizeNiche } from "../_templates/registry";
 import { IMAGE_BANK } from "../_templates/images";
@@ -25,6 +26,7 @@ type LeadRow = {
   services: Service[] | null;
   reviews: Review[] | null;
   about_text: string | null;
+  theme: Theme | null;
 };
 
 async function loadLead(slug: string): Promise<SiteData | null> {
@@ -38,7 +40,7 @@ async function loadLead(slug: string): Promise<SiteData | null> {
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { data, error } = await supabase
     .from("leads")
-    .select("name, slug, niche, city, phone, address, rating, rating_count, headline, subheadline, services, reviews, about_text")
+    .select("name, slug, niche, city, phone, address, rating, rating_count, headline, subheadline, services, reviews, about_text, theme")
     .eq("slug", slug)
     .maybeSingle<LeadRow>();
   if (error) {
@@ -77,6 +79,7 @@ async function loadLead(slug: string): Promise<SiteData | null> {
     about: data.about_text ?? "",
     heroImage: bank.hero,
     gallery: bank.gallery.map((g) => ({ ...g, cap: `${g.cap} · ${data.city}` })),
+    theme: data.theme ?? null,
   };
 }
 

@@ -25,12 +25,21 @@ export async function POST(
 
   const { data, error } = await supabase
     .from("leads")
-    .select("id, name, slug, city, phone, site_url, owner_first_name")
+    .select("id, name, slug, city, phone, site_url, owner_first_name, sms_consent")
     .eq("slug", slug)
-    .maybeSingle<LeadForOutreach>();
+    .maybeSingle<LeadForOutreach & { sms_consent: boolean | null }>();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!data) return NextResponse.json({ error: "lead not found" }, { status: 404 });
+
+  // Carrier-compliance: never SMS a lead who explicitly declined consent on
+  // the web form. Null (cold prospect, never asked) and true (opted in) pass.
+  if (data.sms_consent === false) {
+    return NextResponse.json(
+      { error: "This lead declined SMS consent on the website form." },
+      { status: 403 },
+    );
+  }
 
   let client: SignalWireClient;
   try {

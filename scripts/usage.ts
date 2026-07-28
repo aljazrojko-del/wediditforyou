@@ -11,6 +11,10 @@ import { join } from "node:path";
 
 const USAGE_DIR = "scripts/.usage";
 
+// Serverless filesystems (Vercel) are read-only. Skip persistence there —
+// budget protection then lives entirely in Google Cloud Console quotas.
+const IS_SERVERLESS = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
 // Defaults are conservative (high cost / low cap) so we trip early. Override
 // with env vars once you confirm your actual SKU pricing.
 const COST_PER_CALL = parseFloat(process.env.PLACES_COST_PER_CALL_USD ?? "0.04");
@@ -35,11 +39,13 @@ function filePath(): string {
 }
 
 export function read(): Usage {
-  try {
-    const data = JSON.parse(readFileSync(filePath(), "utf-8")) as Usage;
-    if (data.month === currentMonth()) return data;
-  } catch {
-    // Missing or unreadable — fresh month.
+  if (!IS_SERVERLESS) {
+    try {
+      const data = JSON.parse(readFileSync(filePath(), "utf-8")) as Usage;
+      if (data.month === currentMonth()) return data;
+    } catch {
+      // Missing or unreadable — fresh month.
+    }
   }
   return {
     month: currentMonth(),
@@ -50,6 +56,7 @@ export function read(): Usage {
 }
 
 function write(u: Usage): void {
+  if (IS_SERVERLESS) return;
   mkdirSync(USAGE_DIR, { recursive: true });
   writeFileSync(filePath(), JSON.stringify(u, null, 2));
 }

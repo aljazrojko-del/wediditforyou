@@ -49,17 +49,10 @@ export async function POST(req: Request) {
     smsConsentAt: typeof body.smsConsentAt === "string" ? body.smsConsentAt : null,
   };
 
-  // SMS consent is required by the carrier for any phone-based follow-up.
-  // Block submissions that ticked the box client-side but were tampered with.
-  if (!fields.smsConsent) {
-    return NextResponse.json(
-      {
-        error:
-          "Please confirm SMS consent so we can text you the preview URL.",
-      },
-      { status: 400 },
-    );
-  }
+  // SMS consent is OPTIONAL per A2P 10DLC carrier rules — we cannot require
+  // it to submit ("forced consent" violates TCPA / carrier compliance). The
+  // consent state is recorded so downstream outreach knows whether SMS is
+  // permitted for this lead. No consent → email-only follow-up.
 
   const required: Array<"name" | "email" | "phone" | "businessName" | "niche" | "location"> = [
     "name",

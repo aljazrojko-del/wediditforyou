@@ -8,10 +8,12 @@
  * the SignalWire dashboard before non-Houston numbers can send.
  */
 
+// Dallas is the only A2P-10DLC-approved SMS sender. Houston has been retired.
+// The other regional numbers (Phoenix, Nashville, Chicago) are voice-only for
+// now — using them as the SMS "From" hits 21601 "not SMS-capable".
 const REGION_PREFIXES: Array<{ city: string; envKey: string }> = [
-  { city: "Houston", envKey: "SIGNALWIRE_PHONE_HOUSTON" },
-  { city: "Phoenix", envKey: "SIGNALWIRE_PHONE_PHOENIX" },
   { city: "Dallas", envKey: "SIGNALWIRE_PHONE_DALLAS" },
+  { city: "Phoenix", envKey: "SIGNALWIRE_PHONE_PHOENIX" },
   { city: "Nashville", envKey: "SIGNALWIRE_PHONE_NASHVILLE" },
   { city: "Chicago", envKey: "SIGNALWIRE_PHONE_CHICAGO" },
 ];
@@ -51,8 +53,9 @@ export class SignalWireClient {
   }
 
   /**
-   * Pick the right outbound number for a lead's city. Falls back to Houston
-   * if no city match. Returns null if no number is configured at all.
+   * Pick the right outbound number for a lead's city. Falls back to Dallas
+   * (the only A2P-10DLC-approved SMS sender). Returns null if Dallas isn't
+   * configured either.
    */
   pickFromNumber(city: string | null | undefined): string | null {
     if (city) {
@@ -63,7 +66,7 @@ export class SignalWireClient {
         }
       }
     }
-    return process.env.SIGNALWIRE_PHONE_HOUSTON ?? null;
+    return process.env.SIGNALWIRE_PHONE_DALLAS ?? null;
   }
 
   /**

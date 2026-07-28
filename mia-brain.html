@@ -1,0 +1,40 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Mia Brain Contract — 2026-07-05</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root{--bg:#0a0a0b;--card:#131316;--text:#e7e7ea;--dim:#9b9ba3;--green:#4ade80;--amber:#fbbf24;--red:#f87171;--line:#26262b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 "Space Grotesk",-apple-system,system-ui,sans-serif;padding:0 16px 80px}
+main{max-width:880px;margin:0 auto}
+header{padding:48px 0 12px}
+h1{font-family:Syne,inherit;font-size:clamp(26px,5vw,40px);line-height:1.15;margin:0 0 8px}
+.badge{display:inline-block;background:#7f1d1d;color:#fecaca;border:1px solid #b91c1c;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.4px}
+.meta{color:var(--dim);font-size:14px;margin-top:10px}
+#content h1{font-size:26px;margin-top:44px}#content h2{font-size:21px;margin-top:38px;border-bottom:1px solid var(--line);padding-bottom:8px}
+#content h3{font-size:17px;margin-top:28px}
+#content table{border-collapse:collapse;width:100%;font-size:13.5px;display:block;overflow-x:auto;white-space:nowrap}
+#content th,#content td{border:1px solid var(--line);padding:7px 10px;text-align:left;white-space:normal;min-width:70px}
+#content th{background:var(--card);position:sticky;top:0}
+#content tr:nth-child(even){background:#0f0f12}
+#content code{background:var(--card);padding:2px 6px;border-radius:5px;font-size:.88em}
+#content pre{background:var(--card);padding:14px;border-radius:10px;overflow-x:auto}
+#content blockquote{border-left:3px solid var(--amber);margin:0;padding:4px 16px;color:var(--dim)}
+#content strong{color:#fff}
+#content td:nth-child(3),#content td:nth-child(2){font-weight:600}
+a{color:#7dd3fc}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 0;font-size:13px;color:var(--dim)}
+.legend span b{font-weight:700}
+</style></head><body><main>
+<header>
+<span class="badge">MIA BRAIN · ALJAZ EDITS WORDS · STACK STAYS HIDDEN</span>
+<h1>Mia Brain: Aljaz Editing Contract</h1>
+<div class="meta">For Aljaz's Claude · seed brain linked below · 2026-07-12</div>
+<div class="legend"><span>📄 <b><a href="/mia_brain.seed.json" style="color:#7dd3fc">mia_brain.seed.json ↓</a></b></span></div>
+</header>
+<div id="content"></div>
+<script>
+const md="# Mia Brain: Aljaz Editing Contract\n\n**You edit Mia's words. We own the engine. Neither side sees the other's internals.**\n\nYou can change everything Mia *says* (her opener, her scripts, objection handling, the offer lines) without touching, seeing, or being able to reach our calling stack. You expose one endpoint that holds Mia's \"brain.\" Our server polls it every 5 minutes, validates it, and merges the words into the live Mia. If you break it, you only break your own project's script, never our systems.\n\n## What you build: one endpoint\n\n```\nGET  https://wedidit4you.com/api/mia-brain\n     Auth: Bearer OUTREACH_AUTH_TOKEN   (the same token you already gave us)\n     Returns: the mia_brain.json below (application/json)\n```\n\n- Back it with a store your Claude/admin can edit (a Supabase row, a KV, a file, whatever you like).\n- Seed it with `mia_brain.seed.json` (attached). That is Mia's exact current live brain.\n- To change how Mia talks, edit the JSON in your store. Our poller picks it up within 5 minutes.\n\n## The shape (this is all there is)\n\n```json\n{\n  \"stages\": {\n    \"specbuild\": { \"agent_name\": \"Mia\", \"forced_opener\": \"...\", \"campaign_instructions\": \"...\", \"calling_hours_start\": \"...\", \"calling_hours_end\": \"...\", \"service_description\": \"...\" },\n    \"call2\":     { ... same fields ... },\n    \"cold\":      { ... same fields ... }\n  }\n}\n```\n\n- **specbuild** = call 1 when the site is already built (present-tense reveal).\n- **call2** = the showcase + close call.\n- **cold** = call 1 fallback when the site isn't built yet.\n- Editable fields per stage: `agent_name`, `forced_opener`, `campaign_instructions`, `calling_hours_start`, `calling_hours_end`, `service_description`. Anything else you add is ignored.\n\n## What our validator rejects (so a bad edit can't go live)\nEvery poll is validated. If any of these fail, the edit is **rejected**, the last-good brain stays live, and you + we get a Telegram alert:\n- Any credential / URL / stack token in the words (`http`, `signalwire`, `api_token`, `project_id`, a `PT\u2026`/`pit-\u2026` key, etc.). The brain is **words only**. The engine, creds, and webhooks live on our side and are never in this file.\n- Removing the DNC / opt-out handling from `campaign_instructions` on the two cold-outreach stages (compliance floor: Mia must always honor \"take me off your list\").\n- Empty `agent_name`/`forced_opener`/`campaign_instructions`, or absurd lengths (opener > 2000 chars, instructions > 25000).\n\n## What you never need (and never get)\nThe SignalWire creds, the Gemini engine, the outcome webhooks, the VPS, the other clients that share the caller, our internal costs. None of it is in this file or reachable from it. The `$450/$700` in the scripts are **your** customer offer prices, yours to change; our cost/margins aren't here at all.\n\n## Verifying a change\nWhen your edit applies, you get a Telegram diff. To *hear* it before a real prospect, ping us and we fire one test call to your Zoiper with the new brain. We don't auto-dial you on every edit.\n\nThat's the whole contract. Edit the words, commit to your store, and Mia updates herself within 5 minutes, safely, and without you ever seeing our stack.\n";
+document.getElementById('content').innerHTML=marked.parse(md);
+</script>
+</main></body></html>

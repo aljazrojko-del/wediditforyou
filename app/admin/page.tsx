@@ -21,23 +21,46 @@ async function loadCities(): Promise<string[]> {
   return Array.from(new Set(data.map((r) => r.city as string).filter(Boolean))).sort();
 }
 
-async function loadLeads(params: { city?: string; status?: string; niche?: string }): Promise<LeadRowData[]> {
+async function loadLeads(params: { city?: string; status?: string; niche?: string; grade?: string }): Promise<LeadRowData[]> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return [];
   const supabase = createClient(url, key, { auth: { persistSession: false } });
+
+  // Parse grade param: "A,B" (default) → ['A_ELITE','B_HOT']. "all" clears filter.
+  const GRADE_MAP: Record<string, string> = {
+    A: "A_ELITE", B: "B_HOT", C: "C_WARM", D: "D_MID", E: "E_SUSPECT",
+  };
+  const gradeInput = (params.grade ?? "A,B").trim();
+  const grades: string[] | null =
+    gradeInput.toLowerCase() === "all"
+      ? null
+      : gradeInput
+          .split(",")
+          .map((g) => g.trim().toUpperCase())
+          .map((g) => GRADE_MAP[g] ?? g)
+          .filter((g) => g.length > 0);
+
   // Cast away the chained-filter type narrowing — it blows up TS2589 otherwise.
   // The result is re-asserted to LeadRowData[] at the end.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let q: any = supabase
     .from("leads")
     .select(
-      "id, name, slug, city, niche, phone, site_url, owner_first_name, email, rating, rating_count, sms_sent_at, call_placed_at, inbound_count, last_inbound_at, has_website, payment_status, tier, customer_admin_token",
+      "id, name, slug, city, niche, phone, site_url, owner_first_name, owner_last_name, owner_title, owner_email, owner_phone, owner_name, email, email_status, rating, rating_count, sms_sent_at, call_placed_at, inbound_count, last_inbound_at, has_website, payment_status, tier, customer_admin_token, address, source, place_id, types, facebook_url, company_domain, google_review_url, enrichment_data, enriched_at, generated_at, created_at, website_url, quality_grade",
     )
     .eq("has_website", false)
     .not("slug", "is", null)
-    .order("created_at", { ascending: false })
+    .not("site_url", "is", null)
+    .not("phone", "is", null)
+    // Grade first (A → B → C → D → E), then rating, then reviews. Highest
+    // quality leads surface first so the Mia-call button is always aimed
+    // at the best remaining lead.
+    .order("quality_grade", { ascending: true, nullsFirst: false })
+    .order("rating", { ascending: false, nullsFirst: false })
+    .order("rating_count", { ascending: false, nullsFirst: false })
     .limit(PAGE_SIZE);
+  if (grades && grades.length > 0) q = q.in("quality_grade", grades);
   if (params.city) q = q.eq("city", params.city);
   if (params.niche) q = q.eq("niche", params.niche);
   if (params.status === "untouched") q = q.is("sms_sent_at", null).is("call_placed_at", null);
@@ -80,7 +103,7 @@ async function loadLeads(params: { city?: string; status?: string; niche?: strin
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ city?: string; status?: string; niche?: string }>;
+  searchParams: Promise<{ city?: string; status?: string; niche?: string; grade?: string }>;
 }) {
   if (!(await isAuthed())) redirect("/admin/login");
 
@@ -91,6 +114,7 @@ export default async function AdminPage({
   if (sp.city) filterParams.city = sp.city;
   if (sp.niche) filterParams.niche = sp.niche;
   if (sp.status) filterParams.status = sp.status;
+  if (sp.grade) filterParams.grade = sp.grade;
 
   // For Blast safety: only allow batch when SMS is the action AND status is "untouched"
   // (or the user has explicitly filtered to a city/niche).

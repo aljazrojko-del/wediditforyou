@@ -53,6 +53,9 @@ export async function POST(req: Request) {
     .not("phone", "is", null)
     .not("site_url", "is", null)
     .not("slug", "is", null)
+    // Carrier-compliance: exclude only EXPLICIT declines. Nulls (cold pull,
+    // never asked) and trues (opted in) both pass through.
+    .not("sms_consent", "is", false)
     .order("created_at", { ascending: false })
     .limit(cap);
 
