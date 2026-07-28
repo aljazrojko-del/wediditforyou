@@ -40,7 +40,7 @@ async function loadLead(slug: string): Promise<SiteData | null> {
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { data, error } = await supabase
     .from("leads")
-    .select("name, slug, niche, city, phone, address, rating, rating_count, headline, subheadline, services, reviews, about_text, theme")
+    .select("name, slug, niche, city, phone, address, rating, rating_count, headline, subheadline, services, reviews, about_text, theme, logo_url, cover_url")
     .eq("slug", slug)
     .maybeSingle<LeadRow>();
   if (error) {
@@ -80,6 +80,8 @@ async function loadLead(slug: string): Promise<SiteData | null> {
     heroImage: bank.hero,
     gallery: bank.gallery.map((g) => ({ ...g, cap: `${g.cap} · ${data.city}` })),
     theme: data.theme ?? null,
+    logoUrl: (data as unknown as { logo_url?: string | null }).logo_url ?? null,
+    coverUrl: (data as unknown as { cover_url?: string | null }).cover_url ?? null,
   };
 }
 

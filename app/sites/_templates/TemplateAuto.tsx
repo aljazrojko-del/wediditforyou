@@ -67,10 +67,27 @@ export default function TemplateAuto({ data }: { data: SiteData }) {
 
       <header className="border-b border-white/10">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-2 text-lg font-extrabold uppercase tracking-tight">
-            <span className="rounded bg-[var(--t-accent)] px-2 py-0.5 text-[var(--t-accent-contrast)]">{shortName}</span>
-            {restOfName && <span className="hidden sm:inline">{restOfName}</span>}
-          </div>
+          {/* Real logo swaps in when lead has one; the wordmark fallback keeps
+              generic Auto sites branded before we know the customer's mark. */}
+          {data.logoUrl ? (
+            <div className="flex items-center gap-3">
+              <Image
+                src={data.logoUrl}
+                alt={`${data.businessName} logo`}
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded bg-white object-contain p-1"
+              />
+              <span className="hidden text-lg font-extrabold uppercase tracking-tight sm:inline">
+                {data.businessName}
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-lg font-extrabold uppercase tracking-tight">
+              <span className="rounded bg-[var(--t-accent)] px-2 py-0.5 text-[var(--t-accent-contrast)]">{shortName}</span>
+              {restOfName && <span className="hidden sm:inline">{restOfName}</span>}
+            </div>
+          )}
           {tel && (
             <a href={`tel:${tel}`} className="rounded-md bg-[var(--t-accent)] px-5 py-2.5 text-sm font-extrabold uppercase tracking-wider text-[var(--t-accent-contrast)] hover:bg-[var(--t-accent-hover)]">
               Call now

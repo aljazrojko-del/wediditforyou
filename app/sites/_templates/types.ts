@@ -32,4 +32,9 @@ export type SiteData = {
   heroImage: string;
   gallery: { src: string; cap: string }[];
   theme: Theme | null;
+  // Optional real-brand assets from the lead's Google/Facebook footprint.
+  // When present, templates render them in place of the generic wordmark
+  // (logo) or hero image (cover). Null keeps the current generic look.
+  logoUrl: string | null;
+  coverUrl: string | null;
 };
