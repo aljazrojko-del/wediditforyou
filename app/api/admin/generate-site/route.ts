@@ -17,6 +17,13 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+// Sites only render on the `sites.` subdomain; the apex (wedidit4you.com/<slug>)
+// 404s. The generator may write an apex site_url to the DB (SITE_ORIGIN), so we
+// always hand back the guaranteed-live subdomain URL built from the slug.
+const SITES_ORIGIN = "https://sites.wedidit4you.com";
+const liveUrl = (slug: string | null | undefined) =>
+  slug ? `${SITES_ORIGIN}/${slug}` : null;
+
 export async function POST(req: Request) {
   const expected = process.env.OUTREACH_AUTH_TOKEN;
   const auth = req.headers.get("authorization") ?? "";
@@ -49,8 +56,8 @@ export async function POST(req: Request) {
     .select("site_url, slug")
     .eq("id", leadId)
     .maybeSingle<{ site_url: string | null; slug: string | null }>();
-  if (existing?.site_url) {
-    return NextResponse.json({ url: existing.site_url, slug: existing.slug, generated: false });
+  if (existing?.site_url && existing.slug) {
+    return NextResponse.json({ url: liveUrl(existing.slug), slug: existing.slug, generated: false });
   }
 
   // Generate now (writes slug + site_url + content to the lead row).
@@ -68,8 +75,8 @@ export async function POST(req: Request) {
     .select("site_url, slug")
     .eq("id", leadId)
     .maybeSingle<{ site_url: string | null; slug: string | null }>();
-  if (!after?.site_url) {
-    return NextResponse.json({ error: "generation produced no site_url" }, { status: 500 });
+  if (!after?.slug) {
+    return NextResponse.json({ error: "generation produced no slug" }, { status: 500 });
   }
-  return NextResponse.json({ url: after.site_url, slug: after.slug, generated: true });
+  return NextResponse.json({ url: liveUrl(after.slug), slug: after.slug, generated: true });
 }
