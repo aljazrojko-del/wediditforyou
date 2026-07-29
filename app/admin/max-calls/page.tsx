@@ -29,7 +29,7 @@ async function loadElevenConvs(): Promise<ElItem[]> {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) return [];
   try {
-    const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversations?agent_id=${AGENT_ID}&page_size=200`, {
+    const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversations?agent_id=${AGENT_ID}&page_size=100`, {
       headers: { "xi-api-key": key }, cache: "no-store",
     });
     if (!r.ok) return [];
