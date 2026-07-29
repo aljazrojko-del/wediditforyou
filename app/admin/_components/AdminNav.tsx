@@ -27,6 +27,9 @@ export default function AdminNav() {
           <Link href="/admin/recordings" className="text-sm text-zinc-400 hover:text-zinc-100">
             Recordings
           </Link>
+          <Link href="/admin/max-calls" className="text-sm text-zinc-400 hover:text-zinc-100">
+            Max calls
+          </Link>
           <Link href="/admin/echo" className="text-sm text-zinc-400 hover:text-zinc-100">
             Echo
           </Link>

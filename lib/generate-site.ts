@@ -205,7 +205,7 @@ async function fetchLeadContext(lead: LeadInput & { facebook_url?: string | null
     try {
       const r = await fetch("https://google.serper.dev/search", {
         method: "POST",
-        headers: { "X-API-KEY": key, "Content-Type": "application/json" },
+        headers: { "X-API-KEY": key ?? "", "Content-Type": "application/json" },
         body: JSON.stringify({ q, num }),
       });
       if (!r.ok) return [];
