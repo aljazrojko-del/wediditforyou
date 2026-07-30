@@ -1,14 +1,16 @@
 // /admin/max-calls — every call Max (the AI cold-caller) has made.
 //
-// List is ElevenLabs-conversation-driven so every recording is here and
-// playable (audio + transcript per card). We correlate each conversation to
-// its SignalWire call (by start time) purely to LABEL the outcome (picked up
-// vs voicemail) and power the filter tabs. Admin-authed.
+// Fetches ALL ElevenLabs conversations (paginated), correlates each to its
+// SignalWire call for the outcome label + prospect number, and hands the list
+// to a client component that does search + pagination (100/page). "Conversation"
+// (a human who actually spoke) is derived cheaply from the call's title +
+// length, so the page never has to read every transcript on load. Admin-authed.
 
 import { redirect } from "next/navigation";
 import { isAuthed } from "@/lib/admin-auth";
 import AdminNav from "../_components/AdminNav";
-import MaxCallCard, { type MaxCall } from "./MaxCallCard";
+import { type MaxCall } from "./MaxCallCard";
+import SearchableList from "./SearchableList";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -29,14 +31,21 @@ type ElItem = {
 async function loadElevenConvs(): Promise<ElItem[]> {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) return [];
+  const all: ElItem[] = [];
+  let cursor: string | null = null;
   try {
-    const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversations?agent_id=${AGENT_ID}&page_size=100`, {
-      headers: { "xi-api-key": key }, cache: "no-store",
-    });
-    if (!r.ok) return [];
-    const j = (await r.json()) as { conversations?: ElItem[] };
-    return j.conversations ?? [];
-  } catch { return []; }
+    for (let i = 0; i < 30; i++) {
+      const u = `https://api.elevenlabs.io/v1/convai/conversations?agent_id=${AGENT_ID}&page_size=100` +
+        (cursor ? `&cursor=${encodeURIComponent(cursor)}` : "");
+      const r = await fetch(u, { headers: { "xi-api-key": key }, cache: "no-store" });
+      if (!r.ok) break;
+      const j = (await r.json()) as { conversations?: ElItem[]; has_more?: boolean; next_cursor?: string | null };
+      all.push(...(j.conversations ?? []));
+      if (!j.has_more || !j.next_cursor) break;
+      cursor = j.next_cursor;
+    }
+  } catch { /* return what we have */ }
+  return all;
 }
 
 type SwCall = { to: string; from: string; answered_by: string | null; date_created: string };
@@ -45,7 +54,7 @@ async function loadSwCalls(): Promise<SwCall[]> {
   if (!pid || !tok || !space) return [];
   const basic = Buffer.from(`${pid}:${tok}`).toString("base64");
   try {
-    const r = await fetch(`https://${space}/api/laml/2010-04-01/Accounts/${pid}/Calls.json?PageSize=200`, {
+    const r = await fetch(`https://${space}/api/laml/2010-04-01/Accounts/${pid}/Calls.json?PageSize=1000`, {
       headers: { Authorization: `Basic ${basic}` }, cache: "no-store",
     });
     if (!r.ok) return [];
@@ -60,48 +69,19 @@ function fmtPhone(p: string): string {
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
 }
 
-// Voicemail greeting phrases — a "user" turn matching this is a machine, not a
-// person, so it doesn't count as a real conversation.
-const VOICEMAIL_RE = /leave a (message|voicemail)|after the (beep|tone)|at the tone|record your message|currently (un)?available|not available|can'?t (take|come to|get to)|you'?ve reached|press (one|two|three|[1-9#*])|mailbox|voice\s?mail|please (record|leave)|sorry.{0,25}(missed|unavailable)|thank you for calling/i;
-// Filler-only utterances that aren't real speech.
-const FILLER_RE = /^(\.{2,}|clears throat|coughs?|mm+-?hmm?|uh+|um+|hmm+|yeah|yep|ok(ay)?|hello|hi|\W*)$/i;
-
-// A conversation = a HUMAN who actually said something. Read the transcript and
-// look for a genuine user utterance (real words, not a voicemail greeting, not
-// filler like "..." / "mm-hmm").
-async function conversationHappened(conversationId: string, key: string): Promise<boolean> {
-  try {
-    const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}`, {
-      headers: { "xi-api-key": key }, cache: "no-store",
-    });
-    if (!r.ok) return false;
-    const d = (await r.json()) as { transcript?: Array<{ role?: string; message?: string | null }> };
-    for (const t of d.transcript ?? []) {
-      if (t.role !== "user") continue;
-      const m = (t.message ?? "").trim();
-      if (!/[a-z]{3,}/i.test(m)) continue;   // no real word (e.g. "...")
-      if (FILLER_RE.test(m)) continue;       // just "mm-hmm" / "okay" / "..."
-      if (VOICEMAIL_RE.test(m)) continue;    // voicemail greeting, not a person
-      if (m.split(/\s+/).length < 2) continue; // single word, likely not a real reply
-      return true;
-    }
-    return false;
-  } catch { return false; }
-}
-
-async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let i = 0;
-  async function worker() { while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx]); } }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
-  return out;
+// Cheap "real conversation" heuristic from the list item (no transcript fetch):
+// not a machine, the auto-title doesn't scream silence/voicemail, and there was
+// real back-and-forth (turns + duration).
+const SILENCE_TITLE = /silent|unrespons|no response|confirming (the )?(user|presence)|user (presence|identification)|incomplete|voicemail|dial tone|dead air|wrong number|no answer/i;
+function spokeFromList(title: string | null | undefined, msgs: number | null | undefined, dur: number | null | undefined, outcome: MaxCall["outcome"]): boolean {
+  if (outcome === "voicemail") return false;
+  if (SILENCE_TITLE.test(title ?? "")) return false;
+  return (msgs ?? 0) >= 4 && (dur ?? 0) >= 18;
 }
 
 async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> {
   const [el, sw] = await Promise.all([loadElevenConvs(), loadSwCalls()]);
 
-  // Correlate each conversation to its SW call by nearest start time (±90s) to
-  // pull the answered_by verdict + prospect number.
   const swByTime = sw
     .map((c) => ({ ...c, epoch: Math.floor(new Date(c.date_created).getTime() / 1000) }))
     .sort((a, b) => a.epoch - b.epoch);
@@ -115,7 +95,7 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       const diff = Math.abs(s.epoch - start);
       if (diff < bestDiff) { bestIdx = i; bestDiff = diff; }
     });
-    let outcome: MaxCall["outcome"] = "picked_up"; // a conversation exists => it connected
+    let outcome: MaxCall["outcome"] = "picked_up";
     let phone: string | null = null;
     if (bestIdx >= 0) {
       used.add(bestIdx);
@@ -133,26 +113,10 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       outcome,
       phone,
       toolNames: c.tool_names ?? [],
-      spoke: false,
+      spoke: spokeFromList(c.call_summary_title, c.message_count, c.call_duration_secs, outcome),
     };
   });
-
   calls.sort((a, b) => (b.startSecs ?? 0) - (a.startSecs ?? 0));
-
-  // Flag real conversations (human who actually said something) by reading the
-  // transcript — but ONLY for the most recent calls. Fetching every transcript
-  // on load doesn't scale (100+ conversations) and times the page out. Machine
-  // calls are skipped up front. A hard timeout guarantees the page still renders.
-  const key = process.env.ELEVENLABS_API_KEY;
-  if (key) {
-    const recent = calls.slice(0, 60);
-    const compute = mapLimit(recent, 10, (c) =>
-      c.outcome === "voicemail" ? Promise.resolve(false) : conversationHappened(c.id, key),
-    ).then((flags) => { recent.forEach((c, i) => { c.spoke = flags[i]; }); });
-    // Never let this block rendering longer than ~15s.
-    await Promise.race([compute, new Promise((r) => setTimeout(r, 15000))]);
-  }
-
   return { calls, error: null };
 }
 
@@ -194,7 +158,7 @@ export default async function MaxCallsPage({ searchParams }: { searchParams: Pro
           </p>
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           {tabs.map((t) => {
             const active = filter === t.key;
             return (
@@ -210,10 +174,8 @@ export default async function MaxCallsPage({ searchParams }: { searchParams: Pro
 
         {error ? (
           <div className="border border-rose-900 bg-rose-950/30 rounded-lg p-6 text-sm text-rose-300">Couldn&apos;t load calls: {error}</div>
-        ) : rows.length === 0 ? (
-          <div className="border border-zinc-900 rounded-lg p-12 text-center text-zinc-500">No calls in this view.</div>
         ) : (
-          <ul className="space-y-3">{rows.map((c) => <MaxCallCard key={c.id} call={c} />)}</ul>
+          <SearchableList calls={rows} />
         )}
       </div>
     </>
