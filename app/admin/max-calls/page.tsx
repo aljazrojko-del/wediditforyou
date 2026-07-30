@@ -11,6 +11,7 @@ import AdminNav from "../_components/AdminNav";
 import MaxCallCard, { type MaxCall } from "./MaxCallCard";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "agent_0101kymwezq6eg4v91cnf5ed5j3p";
 const MAX_FROM = process.env.SIGNALWIRE_PHONE_DALLAS || "+14696087322";
@@ -136,17 +137,22 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
     };
   });
 
-  // Flag real conversations (human who actually said something) by reading each
-  // transcript. Skip machine-classified calls up front — no need to fetch those.
+  calls.sort((a, b) => (b.startSecs ?? 0) - (a.startSecs ?? 0));
+
+  // Flag real conversations (human who actually said something) by reading the
+  // transcript — but ONLY for the most recent calls. Fetching every transcript
+  // on load doesn't scale (100+ conversations) and times the page out. Machine
+  // calls are skipped up front. A hard timeout guarantees the page still renders.
   const key = process.env.ELEVENLABS_API_KEY;
   if (key) {
-    const flags = await mapLimit(calls, 8, (c) =>
+    const recent = calls.slice(0, 60);
+    const compute = mapLimit(recent, 10, (c) =>
       c.outcome === "voicemail" ? Promise.resolve(false) : conversationHappened(c.id, key),
-    );
-    calls.forEach((c, i) => { c.spoke = flags[i]; });
+    ).then((flags) => { recent.forEach((c, i) => { c.spoke = flags[i]; }); });
+    // Never let this block rendering longer than ~15s.
+    await Promise.race([compute, new Promise((r) => setTimeout(r, 15000))]);
   }
 
-  calls.sort((a, b) => (b.startSecs ?? 0) - (a.startSecs ?? 0));
   return { calls, error: null };
 }
 
