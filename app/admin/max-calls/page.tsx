@@ -80,7 +80,9 @@ const SILENCE_TITLE = /silent|unrespons|no response|confirming (the )?(user|pres
 function isConversation(title: string | null | undefined, msgs: number | null | undefined, dur: number | null | undefined): boolean {
   const t = title ?? "";
   if (VM_TITLE.test(t) || SILENCE_TITLE.test(t)) return false;
-  return (msgs ?? 0) >= 4 && (dur ?? 0) >= 18;
+  // A topic title (not voicemail/silence) + a couple of real turns = a person
+  // said something. Keep it low so short exchanges (e.g. "are you AI?") count.
+  return (msgs ?? 0) >= 3 && (dur ?? 0) >= 12;
 }
 
 // Every row here already CONNECTED (it has an ElevenLabs conversation), so this
