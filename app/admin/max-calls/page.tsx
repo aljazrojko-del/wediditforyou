@@ -73,7 +73,7 @@ function fmtPhone(p: string): string {
 // "silent/unresponsive" for dead air. We trust the conversation itself over
 // SignalWire's answered_by, which frequently false-positives "machine" on calls
 // a human clearly answered (hence a 5-17 turn conversation still tagged machine).
-const VM_TITLE = /voice ?mail|answering machine|left (a|you a) message|leave a message/i;
+const VM_TITLE = /voice ?mail|answering machine|mailbox|left (a|you a) message|leave a message|(not|un)available|can'?t take (your|the|this) call/i;
 const SILENCE_TITLE = /silent|unrespons|no response|confirming (the )?(user|presence)|user (presence|identification)|incomplete|dial tone|dead air|wrong number|no answer/i;
 
 // Real two-way conversation? (no transcript fetch — title + turns + duration).
