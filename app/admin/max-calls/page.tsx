@@ -59,6 +59,43 @@ function fmtPhone(p: string): string {
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
 }
 
+// Voicemail greeting phrases — a "user" turn matching this is a machine, not a
+// person, so it doesn't count as a real conversation.
+const VOICEMAIL_RE = /leave a (message|voicemail)|after the (beep|tone)|at the tone|record your message|currently (un)?available|not available|can'?t (take|come to|get to)|you'?ve reached|press (one|two|three|[1-9#*])|mailbox|voice\s?mail|please (record|leave)|sorry.{0,25}(missed|unavailable)|thank you for calling/i;
+// Filler-only utterances that aren't real speech.
+const FILLER_RE = /^(\.{2,}|clears throat|coughs?|mm+-?hmm?|uh+|um+|hmm+|yeah|yep|ok(ay)?|hello|hi|\W*)$/i;
+
+// A conversation = a HUMAN who actually said something. Read the transcript and
+// look for a genuine user utterance (real words, not a voicemail greeting, not
+// filler like "..." / "mm-hmm").
+async function conversationHappened(conversationId: string, key: string): Promise<boolean> {
+  try {
+    const r = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}`, {
+      headers: { "xi-api-key": key }, cache: "no-store",
+    });
+    if (!r.ok) return false;
+    const d = (await r.json()) as { transcript?: Array<{ role?: string; message?: string | null }> };
+    for (const t of d.transcript ?? []) {
+      if (t.role !== "user") continue;
+      const m = (t.message ?? "").trim();
+      if (!/[a-z]{3,}/i.test(m)) continue;   // no real word (e.g. "...")
+      if (FILLER_RE.test(m)) continue;       // just "mm-hmm" / "okay" / "..."
+      if (VOICEMAIL_RE.test(m)) continue;    // voicemail greeting, not a person
+      if (m.split(/\s+/).length < 2) continue; // single word, likely not a real reply
+      return true;
+    }
+    return false;
+  } catch { return false; }
+}
+
+async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let i = 0;
+  async function worker() { while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx]); } }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
+  return out;
+}
+
 async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> {
   const [el, sw] = await Promise.all([loadElevenConvs(), loadSwCalls()]);
 
@@ -95,16 +132,29 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       outcome,
       phone,
       toolNames: c.tool_names ?? [],
+      spoke: false,
     };
   });
+
+  // Flag real conversations (human who actually said something) by reading each
+  // transcript. Skip machine-classified calls up front — no need to fetch those.
+  const key = process.env.ELEVENLABS_API_KEY;
+  if (key) {
+    const flags = await mapLimit(calls, 8, (c) =>
+      c.outcome === "voicemail" ? Promise.resolve(false) : conversationHappened(c.id, key),
+    );
+    calls.forEach((c, i) => { c.spoke = flags[i]; });
+  }
+
   calls.sort((a, b) => (b.startSecs ?? 0) - (a.startSecs ?? 0));
   return { calls, error: null };
 }
 
-const FILTERS = ["all", "picked_up", "voicemail", "booked", "texted"] as const;
+const FILTERS = ["all", "conversation", "picked_up", "voicemail", "booked", "texted"] as const;
 type Filter = (typeof FILTERS)[number];
 function matches(c: MaxCall, f: Filter): boolean {
   if (f === "all") return true;
+  if (f === "conversation") return c.spoke;
   if (f === "booked") return c.toolNames.includes("book_appointment");
   if (f === "texted") return c.toolNames.includes("send_sms");
   return c.outcome === f;
@@ -120,6 +170,7 @@ export default async function MaxCallsPage({ searchParams }: { searchParams: Pro
 
   const tabs: Array<{ key: Filter; label: string }> = [
     { key: "all", label: "All" },
+    { key: "conversation", label: "Conversation" },
     { key: "picked_up", label: "Picked up" },
     { key: "voicemail", label: "Voicemail" },
     { key: "booked", label: "Booked" },
@@ -133,7 +184,7 @@ export default async function MaxCallsPage({ searchParams }: { searchParams: Pro
         <div className="mb-5">
           <h1 className="text-2xl font-semibold">Max — AI caller</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            {calls.length} calls · {n("picked_up")} picked up · {n("voicemail")} voicemail · {n("booked")} booked · full audio + transcript
+            {calls.length} calls · {n("conversation")} conversations · {n("picked_up")} picked up · {n("voicemail")} voicemail · {n("booked")} booked
           </p>
         </div>
 

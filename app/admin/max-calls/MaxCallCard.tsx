@@ -12,6 +12,7 @@ export type MaxCall = {
   outcome: "picked_up" | "voicemail" | "unknown";
   phone: string | null;     // from SignalWire correlation, if matched
   toolNames: string[];
+  spoke: boolean;           // human who actually said something (real conversation)
 };
 
 type Turn = { role: string; message: string; secs: number | null; tools: string[] };
@@ -65,6 +66,7 @@ export default function MaxCallCard({ call }: { call: MaxCall }) {
           <div className="flex items-center gap-2 flex-wrap">
             <span className="font-medium text-zinc-100">{call.title || call.phone || "Untitled call"}</span>
             {badge && <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.cls}`}>{badge.label}</span>}
+            {call.spoke && <span className="text-[10px] font-semibold bg-teal-700 text-teal-50 px-1.5 py-0.5 rounded">CONVERSATION</span>}
             {booked && <span className="text-[10px] font-bold bg-sky-600 text-white px-1.5 py-0.5 rounded">BOOKED</span>}
             {texted && <span className="text-[10px] font-bold bg-indigo-600 text-white px-1.5 py-0.5 rounded">TEXTED</span>}
           </div>
