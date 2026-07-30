@@ -69,14 +69,28 @@ function fmtPhone(p: string): string {
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
 }
 
-// Cheap "real conversation" heuristic from the list item (no transcript fetch):
-// not a machine, the auto-title doesn't scream silence/voicemail, and there was
-// real back-and-forth (turns + duration).
-const SILENCE_TITLE = /silent|unrespons|no response|confirming (the )?(user|presence)|user (presence|identification)|incomplete|voicemail|dial tone|dead air|wrong number|no answer/i;
-function spokeFromList(title: string | null | undefined, msgs: number | null | undefined, dur: number | null | undefined, outcome: MaxCall["outcome"]): boolean {
-  if (outcome === "voicemail") return false;
-  if (SILENCE_TITLE.test(title ?? "")) return false;
+// ElevenLabs auto-titles a call a "voicemail" when it actually reached one, and
+// "silent/unresponsive" for dead air. We trust the conversation itself over
+// SignalWire's answered_by, which frequently false-positives "machine" on calls
+// a human clearly answered (hence a 5-17 turn conversation still tagged machine).
+const VM_TITLE = /voice ?mail|answering machine|left (a|you a) message|leave a message/i;
+const SILENCE_TITLE = /silent|unrespons|no response|confirming (the )?(user|presence)|user (presence|identification)|incomplete|dial tone|dead air|wrong number|no answer/i;
+
+// Real two-way conversation? (no transcript fetch — title + turns + duration).
+function isConversation(title: string | null | undefined, msgs: number | null | undefined, dur: number | null | undefined): boolean {
+  const t = title ?? "";
+  if (VM_TITLE.test(t) || SILENCE_TITLE.test(t)) return false;
   return (msgs ?? 0) >= 4 && (dur ?? 0) >= 18;
+}
+
+// Every row here already CONNECTED (it has an ElevenLabs conversation), so this
+// only distinguishes human-conversation vs voicemail-Max-talked-to.
+function classify(answeredBy: string | null, title: string | null | undefined, msgs: number | null | undefined, dur: number | null | undefined): MaxCall["outcome"] {
+  if (VM_TITLE.test(title ?? "")) return "voicemail";           // EL confirmed a voicemail
+  if (isConversation(title, msgs, dur)) return "picked_up";     // real human talk -> ignore AMD false positive
+  const ab = (answeredBy ?? "").toLowerCase();
+  if (ab.startsWith("machine") || ab === "fax") return "voicemail";
+  return "picked_up";
 }
 
 async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> {
@@ -95,14 +109,14 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       const diff = Math.abs(s.epoch - start);
       if (diff < bestDiff) { bestIdx = i; bestDiff = diff; }
     });
-    let outcome: MaxCall["outcome"] = "picked_up";
+    let swAnsweredBy: string | null = null;
     let phone: string | null = null;
     if (bestIdx >= 0) {
       used.add(bestIdx);
-      const ab = (swByTime[bestIdx].answered_by ?? "").toLowerCase();
-      if (ab.startsWith("machine") || ab === "fax") outcome = "voicemail";
+      swAnsweredBy = swByTime[bestIdx].answered_by;
       phone = fmtPhone(swByTime[bestIdx].to);
     }
+    const outcome = classify(swAnsweredBy, c.call_summary_title, c.message_count, c.call_duration_secs);
     return {
       id: c.conversation_id,
       title: c.call_summary_title ?? null,
@@ -113,7 +127,7 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       outcome,
       phone,
       toolNames: c.tool_names ?? [],
-      spoke: spokeFromList(c.call_summary_title, c.message_count, c.call_duration_secs, outcome),
+      spoke: isConversation(c.call_summary_title, c.message_count, c.call_duration_secs),
     };
   });
   calls.sort((a, b) => (b.startSecs ?? 0) - (a.startSecs ?? 0));
