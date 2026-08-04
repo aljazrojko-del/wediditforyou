@@ -69,6 +69,24 @@ function fmtPhone(p: string): string {
   return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : p;
 }
 
+// Exact conversation_id -> phone map the bridge logs at call time. This is the
+// source of truth for the number; the timestamp correlation below is only a
+// fallback for older calls placed before logging existed.
+async function loadCallLog(): Promise<Map<string, string>> {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const map = new Map<string, string>();
+  if (!url || !key) return map;
+  try {
+    const r = await fetch(`${url}/rest/v1/max_call_log?select=conversation_id,phone`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: "no-store",
+    });
+    if (!r.ok) return map;
+    const rows = (await r.json()) as Array<{ conversation_id: string; phone: string | null }>;
+    for (const row of rows) if (row.conversation_id && row.phone) map.set(row.conversation_id, row.phone);
+  } catch { /* fall back to time correlation */ }
+  return map;
+}
+
 // ElevenLabs auto-titles a call a "voicemail" when it actually reached one, and
 // "silent/unresponsive" for dead air. We trust the conversation itself over
 // SignalWire's answered_by, which frequently false-positives "machine" on calls
@@ -96,7 +114,7 @@ function classify(answeredBy: string | null, title: string | null | undefined, m
 }
 
 async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> {
-  const [el, sw] = await Promise.all([loadElevenConvs(), loadSwCalls()]);
+  const [el, sw, logMap] = await Promise.all([loadElevenConvs(), loadSwCalls(), loadCallLog()]);
 
   const swByTime = sw
     .map((c) => ({ ...c, epoch: Math.floor(new Date(c.date_created).getTime() / 1000) }))
@@ -118,6 +136,9 @@ async function loadCalls(): Promise<{ calls: MaxCall[]; error: string | null }> 
       swAnsweredBy = swByTime[bestIdx].answered_by;
       phone = fmtPhone(swByTime[bestIdx].to);
     }
+    // Exact logged number wins over the timestamp guess whenever we have it.
+    const logged = logMap.get(c.conversation_id);
+    if (logged) phone = fmtPhone(logged);
     const outcome = classify(swAnsweredBy, c.call_summary_title, c.message_count, c.call_duration_secs);
     return {
       id: c.conversation_id,
