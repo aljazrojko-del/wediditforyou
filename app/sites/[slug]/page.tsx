@@ -77,7 +77,9 @@ async function loadLead(slug: string): Promise<SiteData | null> {
     services,
     reviews,
     about: data.about_text ?? "",
-    heroImage: bank.hero,
+    // A lead-specific cover (e.g. their real Facebook cover) overrides the stock
+    // hero; falls back to the per-niche stock image when none is set.
+    heroImage: (data as unknown as { cover_url?: string | null }).cover_url || bank.hero,
     gallery: bank.gallery.map((g) => ({ ...g, cap: `${g.cap} · ${data.city}` })),
     theme: data.theme ?? null,
     logoUrl: (data as unknown as { logo_url?: string | null }).logo_url ?? null,
