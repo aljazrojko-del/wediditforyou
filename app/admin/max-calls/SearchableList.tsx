@@ -12,10 +12,19 @@ export default function SearchableList({ calls }: { calls: MaxCall[] }) {
   const [page, setPage] = useState(1);
 
   const query = q.trim().toLowerCase();
+  const qDigits = query.replace(/\D/g, "");
   const filtered = query
-    ? calls.filter((c) =>
-        ((c.title ?? "") + " " + (c.summary ?? "") + " " + (c.phone ?? "")).toLowerCase().includes(query),
-      )
+    ? calls.filter((c) => {
+        const text = ((c.title ?? "") + " " + (c.summary ?? "")).toLowerCase();
+        if (text.includes(query)) return true;
+        // Number search: match on digits, so "(817) 757-3050", "8177573050"
+        // and "817-757" all find the same card.
+        if (qDigits.length >= 3) {
+          const phoneDigits = (c.phone ?? "").replace(/\D/g, "");
+          if (phoneDigits.includes(qDigits)) return true;
+        }
+        return false;
+      })
     : calls;
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
