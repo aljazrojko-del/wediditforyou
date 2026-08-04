@@ -123,8 +123,10 @@ export default function TemplateAuto({ data }: { data: SiteData }) {
             </div>
           </div>
           <div className="lg:col-span-5">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border-2 border-[var(--t-accent)]/30">
-              <Image src={data.heroImage} alt={`${data.businessName} mobile mechanic`} fill priority sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl border-2 border-[var(--t-accent)]/30 bg-black/20">
+              {/* Stock heroes fill the frame (cover); a customer's real cover is
+                  shown in full (contain) so nothing important gets cropped. */}
+              <Image src={data.heroImage} alt={`${data.businessName} mobile mechanic`} fill priority sizes="(max-width: 1024px) 100vw, 40vw" className={data.coverUrl ? "object-contain" : "object-cover"} />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--t-bg)] to-transparent p-5">
                 <div className="text-xs font-bold uppercase tracking-widest text-[var(--t-accent)]">
                   On-site in 30 min · {data.city}
