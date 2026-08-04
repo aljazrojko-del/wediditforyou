@@ -128,11 +128,15 @@ export default function TemplateAuto({ data }: { data: SiteData }) {
                   a landscape frame + contain (inline style so it can't be purged)
                   so the whole image is visible, not cropped. */}
               <Image src={data.heroImage} alt={`${data.businessName} mobile mechanic`} fill priority sizes="(max-width: 1024px) 100vw, 40vw" style={data.coverUrl ? { objectFit: "contain" } : { objectFit: "cover" }} />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--t-bg)] to-transparent p-5">
-                <div className="text-xs font-bold uppercase tracking-widest text-[var(--t-accent)]">
-                  On-site in 30 min · {data.city}
+              {/* Stock heroes get the caption overlay; a customer's own cover is
+                  left clean (their art already carries the messaging). */}
+              {!data.coverUrl && (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--t-bg)] to-transparent p-5">
+                  <div className="text-xs font-bold uppercase tracking-widest text-[var(--t-accent)]">
+                    On-site in 30 min · {data.city}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
