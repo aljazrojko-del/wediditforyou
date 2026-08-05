@@ -1,12 +1,11 @@
 // POST /api/admin/reschedule-appointment
 // Body: { appointment_id, start_time_ct, duration_minutes?, phone?, first_name?, notify_sms? }
 //
-// Moves an existing GHL walkthrough appointment to a new time (the booking
-// endpoint only creates; this reschedules in place so the reminder ladder
-// re-points instead of double-booking). Optionally texts the prospect the new
-// time via SignalWire (Dallas 10DLC number), same as the booking flow.
+// Moves a walkthrough to a new time in the Supabase `appointments` table
+// (self-hosted, replaces GoHighLevel). Clears the reminder flags so the cron
+// re-sends reminders for the new time, and optionally texts the prospect.
 //
-// Auth: same OUTREACH_AUTH_TOKEN the booking endpoint uses.
+// Auth: OUTREACH_AUTH_TOKEN.
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -16,8 +15,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-const GHL_BASE = "https://services.leadconnectorhq.com";
-const CALENDAR_ID = "REiQNb9rMUEjtRR1Pe7Y";
 const CT_UTC_OFFSET_MINUTES_CDT = -5 * 60;
 
 type Body = {
@@ -62,36 +59,11 @@ function fmtCtDisplay(startCt: string): string {
   return `${day} at ${hr12}:${mi} ${suffix} CT`;
 }
 
-async function ghl<T>(method: string, path: string, token: string, body?: unknown): Promise<{ ok: true; data: T } | { ok: false; status: number; error: string }> {
-  const res = await fetch(GHL_BASE + path, {
-    method,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Version: "2021-07-28",
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const text = await res.text();
-  let parsed: unknown;
-  try { parsed = JSON.parse(text); } catch { parsed = text; }
-  if (!res.ok) {
-    const err = typeof parsed === "object" && parsed !== null && "message" in parsed
-      ? String((parsed as { message: unknown }).message)
-      : text;
-    return { ok: false, status: res.status, error: err };
-  }
-  return { ok: true, data: parsed as T };
-}
-
 export async function POST(req: Request) {
   const expectedToken = process.env.OUTREACH_AUTH_TOKEN;
-  const ghlToken = process.env.GHL_PIT_TOKEN;
-  const locationId = process.env.GHL_WDIFY_LOCATION_ID;
   const supaUrl = process.env.SUPABASE_URL;
   const supaKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!expectedToken || !ghlToken || !locationId) {
+  if (!expectedToken || !supaUrl || !supaKey) {
     return NextResponse.json({ error: "missing env vars" }, { status: 500 });
   }
   if ((req.headers.get("authorization") ?? "") !== `Bearer ${expectedToken}`) {
@@ -106,30 +78,33 @@ export async function POST(req: Request) {
 
   const startUtc = ctIsoToUtcIso(body.start_time_ct ?? "");
   if (!startUtc) {
-    return NextResponse.json({ error: "invalid start_time_ct — use ISO like 2026-08-05T14:30:00" }, { status: 400 });
+    return NextResponse.json({ error: "invalid start_time_ct — use ISO like 2026-08-06T14:30:00" }, { status: 400 });
   }
   const durationMin = Number.isFinite(body.duration_minutes)
     ? Math.min(Math.max(Number(body.duration_minutes), 5), 240) : 15;
-  const endUtc = new Date(new Date(startUtc).getTime() + durationMin * 60_000).toISOString();
 
-  // Reschedule in place. GHL update-appointment: PUT the event id with new times.
-  const upd = await ghl<{ id?: string; appointment?: { id: string; startTime?: string } }>(
-    "PUT",
-    `/calendars/events/appointments/${encodeURIComponent(body.appointment_id)}`,
-    ghlToken,
-    { calendarId: CALENDAR_ID, startTime: startUtc, endTime: endUtc, toNotify: true },
-  );
-  if (!upd.ok) {
-    return NextResponse.json({ error: `reschedule: ${upd.error}`, status: upd.status }, { status: 500 });
-  }
+  const sb = createClient(supaUrl, supaKey, { auth: { persistSession: false } });
+  const { data: upd, error } = await sb.from("appointments")
+    .update({
+      start_time: startUtc,
+      duration_min: durationMin,
+      status: "confirmed",
+      reminder_daybefore_sent_at: null, // re-arm reminders for the new time
+      reminder_dayof_sent_at: null,
+    })
+    .eq("id", body.appointment_id)
+    .select("id, phone, first_name")
+    .maybeSingle<{ id: string; phone: string | null; first_name: string | null }>();
+  if (error) return NextResponse.json({ error: `reschedule: ${error.message}` }, { status: 500 });
+  if (!upd) return NextResponse.json({ error: "appointment not found" }, { status: 404 });
 
-  // Optional confirmation SMS (signed Alex, per house style).
+  // Optional confirmation SMS (signed Alex).
   let smsResult: { ok: boolean; error?: string; sid?: string; to?: string; body?: string } | null = null;
-  const phone = body.phone ? e164(body.phone) : null;
+  const phone = (body.phone ? e164(body.phone) : null) ?? (upd.phone ? e164(upd.phone) : null);
   if (body.notify_sms && phone) {
     const timeStr = fmtCtDisplay(body.start_time_ct);
-    const name = body.first_name ?? "there";
-    const msg = `Hey ${name}, Alex here from wediditforyou — quick update, I moved your site walkthrough to ${timeStr}. I'll call you then. Reply STOP to opt out. — Alex`;
+    const name = body.first_name ?? upd.first_name ?? "there";
+    const msg = `Hey ${name}, Alex here from wediditforyou - quick update, I moved your site walkthrough to ${timeStr}. I'll call you then. Reply STOP to opt out. - Alex`;
     const from = process.env.SIGNALWIRE_PHONE_DALLAS ?? null;
     if (!from) {
       smsResult = { ok: false, error: "no Dallas from-number configured" };
@@ -138,9 +113,8 @@ export async function POST(req: Request) {
         const client = new SignalWireClient();
         const res = await client.sendSms({ from, to: phone, body: msg });
         smsResult = { ok: res.ok, sid: res.sid, error: res.error, to: phone, body: msg };
-        if (res.ok && supaUrl && supaKey) {
+        if (res.ok) {
           try {
-            const sb = createClient(supaUrl, supaKey, { auth: { persistSession: false } });
             await sb.from("outbound_messages").insert({
               from_phone: from, to_phone: phone, body: msg, message_sid: res.sid ?? null, status: "sent",
             });
@@ -152,9 +126,8 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     ok: true,
-    appointment_id: body.appointment_id,
+    appointment_id: upd.id,
     start_time_utc: startUtc,
-    end_time_utc: endUtc,
     start_time_ct_display: fmtCtDisplay(body.start_time_ct),
     sms: smsResult,
   });
