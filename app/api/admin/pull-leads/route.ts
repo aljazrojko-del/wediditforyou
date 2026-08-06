@@ -17,6 +17,10 @@ export const maxDuration = 300;
 type Body = {
   niche?: string;
   city?: string;
+  // Optional search-term override: search Places for THIS phrase (e.g.
+  // "mobile pet grooming") while still storing the canonical `niche`. Lets us
+  // target solo/mobile operators without polluting the niche used for calling.
+  query?: string;
   pages?: number;
   minRating?: number | null;
   minReviews?: number | null;
@@ -44,8 +48,13 @@ function placeToRow(p: PlaceResult, niche: string, city: string): LeadRow {
 }
 
 export async function POST(req: Request) {
-  const unauth = await requireAdmin();
-  if (unauth) return unauth;
+  // Admin session (browser) OR the OUTREACH token (scripted scans).
+  const outreach = process.env.OUTREACH_AUTH_TOKEN;
+  const tokenOk = outreach && (req.headers.get("authorization") ?? "") === `Bearer ${outreach}`;
+  if (!tokenOk) {
+    const unauth = await requireAdmin();
+    if (unauth) return unauth;
+  }
 
   let body: Body;
   try {
@@ -70,7 +79,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const query = `${niche} in ${city}`;
+  const term = (body.query ?? "").trim() || niche;
+  const query = `${term} in ${city}`;
   const all: PlaceResult[] = [];
   for await (const place of searchAllPages(
     process.env.GOOGLE_PLACES_API_KEY,
