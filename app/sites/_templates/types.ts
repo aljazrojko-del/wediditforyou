@@ -1,4 +1,4 @@
-export type NicheKey = "plumber" | "hair" | "auto" | "landscape" | "groomer" | "tutor";
+export type NicheKey = "plumber" | "hair" | "auto" | "landscape" | "groomer" | "tutor" | "gate";
 
 export type Service = { title: string; description: string };
 export type Review  = { quote: string; name: string };

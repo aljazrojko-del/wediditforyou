@@ -60,4 +60,13 @@ export const IMAGE_BANK: Record<NicheKey, ImageBank> = {
       { src: "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=900&q=80&auto=format&fit=crop", cap: "Subject deep dives" },
     ],
   },
+  gate: {
+    hero: "https://images.unsplash.com/photo-1520277739336-7bf67edfa768?w=1600&q=80&auto=format&fit=crop",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80&auto=format&fit=crop", cap: "Driveway gate install" },
+      { src: "https://images.unsplash.com/photo-1585152220054-77c4c4f6ac9e?w=900&q=80&auto=format&fit=crop", cap: "Motor & opener repair" },
+      { src: "https://images.unsplash.com/photo-1592928038403-5c27bd11d535?w=900&q=80&auto=format&fit=crop", cap: "Access control system" },
+      { src: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=900&q=80&auto=format&fit=crop", cap: "On-site diagnosis" },
+    ],
+  },
 };

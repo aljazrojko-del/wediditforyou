@@ -111,6 +111,22 @@ const STATIC_FALLBACK: Record<NicheKey, (name: string, city: string) => AIConten
     ],
     about: `${name} is a private appointment-only hair studio in ${c}. One client at a time, one stylist, full attention. No noisy chair next to you, no upsells, just hair done properly.`,
   }),
+  gate: (name, c) => ({
+    headline: `${c} gates. Fixed fast.`,
+    subheadline: `Broken opener, off-track slider, dead motor — we roll same day and quote before we start.`,
+    services: [
+      { title: "Gate repair", description: `On-site diagnosis and repair for residential + commercial gates across ${c}.` },
+      { title: "Opener + motor", description: "Chain, belt, and hydraulic openers. Swap or rebuild, warrantied." },
+      { title: "New installs", description: "Driveway gates, security gates, entry systems — sized for your property." },
+      { title: "Access control", description: "Keypads, remotes, phone entry, and camera integration." },
+    ],
+    reviews: [
+      { quote: "Gate died on a Sunday. They were out by Monday morning, fixed for the price they quoted.", name: "R. Nguyen" },
+      { quote: "New opener install took under two hours. Clean work, real warranty.", name: "K. Ortega" },
+      { quote: "Techs walked me through what was actually wrong instead of upselling a replacement.", name: "S. Reyes" },
+    ],
+    about: `${name} services residential and commercial gates across ${c}. Licensed, bonded, insured — every job comes with an upfront quote and a real warranty on parts and labor.`,
+  }),
   landscape: (name, c) => ({
     headline: `${c} yards. Kept sharp.`,
     subheadline: `Weekly maintenance, full installs, and tree work — done when we say we'll do it.`,

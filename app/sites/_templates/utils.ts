@@ -9,6 +9,9 @@ const PATTERNS: { key: NicheKey; match: RegExp }[] = [
   { key: "groomer",   match: /\b(dog groom|pet groom|mobile groom|groomer|grooming)/i },
   { key: "tutor",     match: /\b(tutor|tutoring|music teacher|piano teacher|guitar lesson|math coach|reading coach|academ)/i },
   { key: "plumber",   match: /\b(plumb|drain|pipe|leak|water heater)/i },
+  // Gate patterns — order before "auto" so "gate opener" doesn't get pulled
+  // into the auto/mechanic bucket by "opener" alone.
+  { key: "gate",      match: /\b(gate repair|gate install|gate opener|gate motor|driveway gate|access control|automatic gate|fence gate)/i },
   { key: "auto",      match: /\b(auto|mechanic|brake|tire|oil change|car repair)/i },
   { key: "landscape", match: /\b(landscap|lawn|garden|mow|tree service|hedge|yard care)/i },
   { key: "hair",      match: /\b(hair|salon|barber|stylist|braid|balayage)/i },
