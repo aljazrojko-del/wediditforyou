@@ -33,6 +33,26 @@ export const IMAGE_BANK: Record<NicheKey, ImageBank> = {
       { src: "/gallery/auto/battery-replacement.jpg", cap: "Battery replacement" },
     ],
   },
+  // Premium auto template reuses the curated auto photo set.
+  autolux: {
+    hero: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1600&q=80&auto=format&fit=crop",
+    gallery: [
+      { src: "/gallery/auto/oil-change.jpg",          cap: "Cambio de aceite a domicilio" },
+      { src: "/gallery/auto/brake-service.jpg",       cap: "Servicio de frenos en el sitio" },
+      { src: "/gallery/auto/diagnostic-scan.jpg",     cap: "Escaneo de diagnóstico" },
+      { src: "/gallery/auto/battery-replacement.jpg", cap: "Cambio de batería" },
+    ],
+  },
+  // Spanish classic auto template reuses the curated auto photo set.
+  autoes: {
+    hero: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1600&q=80&auto=format&fit=crop",
+    gallery: [
+      { src: "/gallery/auto/oil-change.jpg",          cap: "Cambio de aceite" },
+      { src: "/gallery/auto/brake-service.jpg",       cap: "Servicio de frenos" },
+      { src: "/gallery/auto/diagnostic-scan.jpg",     cap: "Diagnóstico" },
+      { src: "/gallery/auto/battery-replacement.jpg", cap: "Cambio de batería" },
+    ],
+  },
   landscape: {
     hero: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1600&q=80&auto=format&fit=crop",
     gallery: [
