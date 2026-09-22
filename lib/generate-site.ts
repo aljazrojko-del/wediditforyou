@@ -51,6 +51,7 @@ const STATIC_FALLBACK: Record<NicheKey, (name: string, city: string) => AIConten
   // set manually per lead; these entries only satisfy the exhaustive Record type).
   autolux: (name, c) => STATIC_FALLBACK.auto(name, c),
   autoes:  (name, c) => STATIC_FALLBACK.auto(name, c),
+  groomerlux: (name, c) => STATIC_FALLBACK.groomer(name, c),
   auto: (name, c) => ({
     headline: `${c} mechanic. Comes to you.`,
     subheadline: `Driveway, parking lot, side of the road — fixed price before we touch a wrench.`,

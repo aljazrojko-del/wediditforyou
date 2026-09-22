@@ -53,6 +53,16 @@ export const IMAGE_BANK: Record<NicheKey, ImageBank> = {
       { src: "/gallery/auto/battery-replacement.jpg", cap: "Cambio de batería" },
     ],
   },
+  // Premium groomer template reuses the groomer photo set.
+  groomerlux: {
+    hero: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=1600&q=80&auto=format&fit=crop",
+    gallery: [
+      { src: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=900&q=80&auto=format&fit=crop", cap: "Full coat groom" },
+      { src: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=900&q=80&auto=format&fit=crop", cap: "Breed-specific cut" },
+      { src: "https://images.unsplash.com/photo-1450778869180-41d0601e046e?w=900&q=80&auto=format&fit=crop", cap: "Nail trim & paw care" },
+      { src: "https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=900&q=80&auto=format&fit=crop", cap: "Bath & blow-out" },
+    ],
+  },
   landscape: {
     hero: "https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1600&q=80&auto=format&fit=crop",
     gallery: [
