@@ -7,7 +7,7 @@ import TemplateTutor from "./TemplateTutor";
 import TemplateGate from "./TemplateGate";
 import TemplateAutoLux from "./TemplateAutoLux";
 import TemplateAutoEs from "./TemplateAutoEs";
-import TemplateLuxEn from "./TemplateLuxEn";
+import TemplateGroomerBright from "./TemplateGroomerBright";
 
 // Re-exported so existing imports of `from "./registry"` keep working.
 export { normalizeNiche, slugify } from "./utils";
@@ -21,7 +21,7 @@ export const TEMPLATES: Record<NicheKey, ComponentType<{ data: SiteData }>> = {
   autolux:   TemplateAutoLux,
   autoes:    TemplateAutoEs,
   groomer:   TemplateGroomer,
-  groomerlux: TemplateLuxEn,
+  groomerlux: TemplateGroomerBright,
   tutor:     TemplateTutor,
   gate:      TemplateGate,
   hair:      TemplatePlumber,
