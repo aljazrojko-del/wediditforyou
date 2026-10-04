@@ -43,6 +43,16 @@ export const IMAGE_BANK: Record<NicheKey, ImageBank> = {
       { src: "/gallery/auto/battery-replacement.jpg", cap: "Cambio de batería" },
     ],
   },
+  // English premium auto template reuses the curated auto photo set.
+  autoluxen: {
+    hero: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1600&q=80&auto=format&fit=crop",
+    gallery: [
+      { src: "/gallery/auto/oil-change.jpg",          cap: "Mobile oil change" },
+      { src: "/gallery/auto/brake-service.jpg",       cap: "Brake service on-site" },
+      { src: "/gallery/auto/diagnostic-scan.jpg",     cap: "Diagnostic scan" },
+      { src: "/gallery/auto/battery-replacement.jpg", cap: "Battery replacement" },
+    ],
+  },
   // Spanish classic auto template reuses the curated auto photo set.
   autoes: {
     hero: "https://images.unsplash.com/photo-1632823469850-2f77dd9c7f93?w=1600&q=80&auto=format&fit=crop",

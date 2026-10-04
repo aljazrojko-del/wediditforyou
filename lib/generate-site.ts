@@ -50,6 +50,7 @@ const STATIC_FALLBACK: Record<NicheKey, (name: string, city: string) => AIConten
   // Premium/Spanish auto variants reuse the auto fallback (their real content is
   // set manually per lead; these entries only satisfy the exhaustive Record type).
   autolux: (name, c) => STATIC_FALLBACK.auto(name, c),
+  autoluxen: (name, c) => STATIC_FALLBACK.auto(name, c),
   autoes:  (name, c) => STATIC_FALLBACK.auto(name, c),
   groomerlux: (name, c) => STATIC_FALLBACK.groomer(name, c),
   auto: (name, c) => ({

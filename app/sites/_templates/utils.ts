@@ -7,6 +7,7 @@ import type { NicheKey } from "./types";
 // `groomer` before `hair` (which catches "stylist") could compete.
 const PATTERNS: { key: NicheKey; match: RegExp }[] = [
   // Premium / Spanish auto variants — must be tested BEFORE the generic "auto".
+  { key: "autoluxen", match: /\b(auto ?lux ?en|auto premium en|english premium auto)/i },
   { key: "autolux",   match: /\b(auto ?lux|premium auto|auto premium|lux auto)/i },
   { key: "autoes",    match: /\b(auto ?es|auto español|spanish auto|auto spanish)/i },
   { key: "groomerlux", match: /\b(groomer ?lux|premium groom|lux groom)/i },
